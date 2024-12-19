@@ -28,8 +28,19 @@ def create_adjacency_list(edges):
     
     return adjacency_list
 
-
 # --------------------------------------------Sortowanie lity za pomocą heapSort
+def compare_edges(edge1, edge2):
+    # Pierwszeństwo mają krawędzie o mniejszej wadze
+    if edge1['w'] != edge2['w']:
+        return edge1['w'] - edge2['w']  
+    # Przy równych wagach decyduje mniejszy numer pierwszego wierzchołka
+    if edge1['a'] != edge2['a']:
+        return edge1['a'] - edge2['a'] 
+    # Przy równych pierwszych wierzchołkach decyduje mniejszy numer drugiego wierzchołka
+    if edge1['b'] != edge2['b']:
+        return edge1['b'] - edge2['b']  
+    return 0  # Są równe
+
 def max_heapify_iter(Array, n, i):
     # Wykonywana dopóki własność kopca nie zostanie przywrócona. Przerywana, gdy largest == i, co oznacza, że rodzic jest większy lub równy swoim dzieciom.
     while True:
@@ -38,11 +49,13 @@ def max_heapify_iter(Array, n, i):
         right = 2 * i + 2
 
         # Porównanie największego dotychczasowego elementu z lewym dzieckiem
-        if left < n and Array[largest] < Array[left]:
+        # if left < n and Array[left] > Array[largest] :
+        if left < n and compare_edges(Array[left], Array[largest]) > 0:
             largest = left
 
         # Porównanie największego dotychczasowego elementu z prawym dzieckiem
-        if right < n and Array[largest] < Array[right]:
+        # if right < n and Array[right] > Array[largest]:
+        if right < n and compare_edges(Array[right], Array[largest]) > 0:
             largest = right
 
         # Jeśli największy element to nie rodzic, wykonaj zamianę
@@ -56,73 +69,87 @@ def max_heapify_iter(Array, n, i):
 
 def heapSort(Array):
     n=len(Array)
+
+    # Build Heap Max
+    lpn = n//2 - 1 #last parent node
+    end = -1 #aby objeło także index 0 
+    step = -1 # cofanie się o krok ndeksy odwiedzane przez pętlę: lpn =2, lpn-1=1 lpn-2=0(root)
+    for i in range(lpn, end, step):
+        max_heapify_iter(Array, n, i)
+
+     # Sortowanie kopcowe
     lastElement = n - 1 
-    firstElement = 0 
     step = -1 # cofanie
-    for i in range (lastElement, firstElement, step):# i to  aktualna ilość elementów do sortowania, najpierw są wszystkie elementy, potem o 1 mniej itd.  6,5,4,3,2,1
+    for i in range (lastElement, 0, step):# i to  aktualna ilość elementów do sortowania, najpierw są wszystkie elementy, potem o 1 mniej itd.  6,5,4,3,2,1
         #Zmiana największego elementu z Max heap (root) z ostatnim elementem
-        Array[i], Array[firstElement] =  Array[firstElement], Array[i]
+        Array[i], Array[0] =  Array[0], Array[i]
 
-        #przywracanie własności kopca metoda iteraycjna
-        max_heapify_iter(Array, i , firstElement)
+          # Przywracanie własności kopca dla zmniejszonej tablicy
+        max_heapify_iter(Array, i , 0)
 
+# ----------------------------------------DisjointSet
+class DisjointSet:
+    def __init__(self, n):
+        # zestaw zbiorów 1 elementowych, gdzie każdy wierzchołek jest swoim rodzicem
+        self.parent = list(range(n + 1))  # Indeksy od 1 do n
+        self.rank = [0] * (n + 1)        
+    def Find_parent(self, x):
+        # jeśli jest sam dla siebie rodzicem
+        if x == self.parent[x]:
+            return x
+        # w przeciwnym wypadku szukaj rodzica subset
+        else:
+            #rekurencyjne wywołanie
+            self.parent[x] = self.Find_parent(self.parent[x])
+            return self.parent[x]
 
-# Jednoznaczny wybór krawędzi:
-# Pierwszeństwo mają krawędzie o mniejszej wadze
-# Przy równych wagach decyduje mniejszy numer pierwszego wierzchołka
-# Przy równych pierwszych wierzchołkach decyduje mniejszy numer drugiego wierzchołka
-# Funkcja porównująca krawędzie zgodnie z podanymi kryteriami
-def compare_edges(edge1, edge2):
-    if edge1['w'] != edge2['w']:
-        return edge2['w'] - edge1['w'] # Dla max-heap
-    if edge1['a'] != edge2['a']:
-        return edge2['a'] - edge1['a']
-    if edge1['b'] != edge2['b']:
-        return edge2['b'] - edge1['b']
-    return 0
+    def union(self, x, y):
+        xRoot = self.Find_parent(x)
+        yRoot = self.Find_parent(y)
 
-# # Implementacja algorytmu Kruskala
-# def kruskal(edges, n):
-#     # Sortowanie krawędzi za pomocą HeapSort
-#     heap_sort(edges)
+        if xRoot == yRoot: # x and y are already in the same set
+            print("Cyclic Grpah")
+            return  
 
-#     parent = [i for i in range(n + 1)]
+        #Uczycie rank jest szybsze (nlogn)
+        # Union by rank: attach smaller rank tree under the root of the higher rank tree ( dołączenie rzadszego drzewa pod gęstsze drzewo)
+        if self.rank[xRoot] < self.rank[yRoot]:
+            self.parent[xRoot] = yRoot
+        elif self.rank[xRoot] > self.rank[yRoot]:
+            self.parent[yRoot] = xRoot
+        else:
+            # If ranks are the same, make one root and increment its rank
+            self.parent[yRoot] = xRoot
+            self.rank[xRoot] += 1
 
-#     minSpinalTree = []
+# # Implementacja algorytmu Kruskala - do szukania minialnego drzewa spinajacego
+def kruskal(edges, n):
+    # Inicjalizacja zbiorów rozłącznych
+    ds = DisjointSet(n)
+    
+    # Sortowanie krawędzi na podstawie wagi
+    heapSort(edges)
+    
+    # Inicjalizacja listy krawędzi w MST (Minimalnym Drzewie Rozpinającym)
+    mst = []
+    total_weight = 0
 
-#     for edge in edges:
-#         if find(parent, edge['a']) != find(parent, edge['b']):
-#             minSpinalTree.append(edge)
-#             union(parent, edge['a'], edge['b'])
-#         if len(minSpinalTree) == n - 1:
-#             break
-
-#     return minSpinalTree
-
-
-
-
-
-# # Funkcja porównująca krawędzie zgodnie z podanymi kryteriami
-# def compare_edges(edge1, edge2):
-#     if edge1['w'] != edge2['w']:
-#         return edge2['w'] - edge1['w'] # Dla max-heap
-#     if edge1['a'] != edge2['a']:
-#         return edge2['a'] - edge1['a']
-#     if edge1['b'] != edge2['b']:
-#         return edge2['b'] - edge1['b']
-#     return 0
-
-# # Implementacja Union-Find z kompresją ścieżki
-# def find(parent, i):
-#     if parent[i] != i:
-#         parent[i] = find(parent, parent[i])
-#     return parent[i]
-
-# def union(parent, x, y):
-#     xroot = find(parent, x)
-#     yroot = find(parent, y)
-#     parent[yroot] = xroot
+    # Przetwarzanie każdej krawędzi w kolejności rosnącej wag
+    for edge in edges:
+        u = edge['a']
+        v = edge['b']
+        weight = edge['w']
+        
+        # Sprawdzenie, czy wierzchołki `u` i `v` są w tym samym zbiorze
+        if ds.Find_parent(u) != ds.Find_parent(v):
+            # Dodanie krawędzi do MST
+            mst.append(edge)
+            total_weight += weight
+            
+            # Połączenie zbiorów
+            ds.union(u, v)
+    
+    return mst, total_weight
 
 
 
@@ -237,18 +264,17 @@ if __name__ == '__main__':
 
         print(f"Krawędzie z wagami {edges}")
 
-#         # Wykonanie algorytmu Kruskala
-#         minSpinalTree = kruskal(edges, n)
+        minSpinalTree, total_weight = kruskal(edges, n)
 
-#         # Wyświetlenie minimalnego drzewa spinającego
-#         print('MINIMALNE DRZEWO SPINAJĄCE:')
-#         total_cost = 0
-#         for edge in minSpinalTree:
-#             print(f"{edge['a']} {edge['b']} {edge['w']}")
-#             total_cost += edge['w']
-#         print(f'Łączny koszt: {total_cost}')
+        # Wyświetlenie minimalnego drzewa spinającego
+        print('MINIMALNE DRZEWO SPINAJĄCE:')
+        total_cost = 0
+        for edge in minSpinalTree:
+            print(f"{edge['a']} {edge['b']} {edge['w']}")
+            total_cost += edge['w']
+        print(f'Łączny koszt: {total_cost}')
 
-        
+        #-----------------------------------------------------------Szukanie mostów    
         # Budowanie grafu oryginalnego jako lista sąsiedztwa 
         graph_adj_list = create_adjacency_list(edges)
         # Wyświetlenie listy sąsiedztwa
@@ -258,15 +284,6 @@ if __name__ == '__main__':
         # Znajdowanie mostów
 #         bridges = find_bridges(graph_adj_list, n)
             
-
-
-
-
-        # # Budowanie grafu oryginalnego
-        # graph = build_graph(edges, n)
-        # print(f"Graf jako lista sąsiedztwa {graph}")
-#         # Znajdowanie mostów
-#         bridges = find_bridges(graph, n)
 
 #         # Wyświetlanie mostów
 #         print('\nMOSTY:')
