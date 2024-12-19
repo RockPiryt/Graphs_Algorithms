@@ -1,0 +1,11 @@
+Lomuto prostszy - i j na pierwszym index a pivot na ostatnim, i oraz j iterują w prawo, porównujemy wartość j z pivotem
+    Gdy j>pivot to nic nie robimy, tylko j++
+    gdy j<pivot to zamieniami i zj, i++, j++
+    gdy j dojdzie do końca listy(do pivota) to zamieniamy pivot z i
+    pivot ląduje na właściwym indexie
+Hoare - pivot na środek oraz mamy 2 zmienne i (iteruje po lewej subarray- wartości mniejsze od pivota) oraz j  (iteruje po prawej subarray- wartości większe od pivota)
+    iterujemy i w prawo(i++) w left subarray i szukamy wartości nie pasujących do tej subarray (czyli szukamy większych od pivota) 
+    iterująmy j w lewo(j--) w right subarray i szukamy wartości nie pasujących do tej subarray (czyli szukamy mniejszych od pivota)
+    jeżeli znajdziemy i oraz j które nie pasują w swoich subarray to je zamieniamy miedzy soba i<->j
+    zamiany kończymy w momencie kiedy i oraz j się miną 
+
