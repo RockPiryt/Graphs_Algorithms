@@ -151,53 +151,63 @@ def kruskal(edges, n):
     
     return mst, total_weight
 
+#-----------------------------------------------------------------------------------Znajdowanie mostów za pomocą dfs
+def dfs_iter(graph, start, excluded_edge):
+    """
+    :param excluded_edge: Krawędź, którą chcemy pominąć (w formacie (v, u)).
+    :return: Lista odwiedzonych wierzchołków.
+    """
+    n = len(graph)  # Liczba wierzchołków
+    visited = [False] * n  
+    stack = [start - 1]  # Stos zaczyna się od wierzchołka startowego (0-based)
+    
+    while stack:
+        node = stack.pop()
+        node_neighbors = graph[node][1:]  # Pobieramy sąsiadów wierzchołka (pomijamy indeks)
+        
+        if not visited[node]:  
+            visited[node] = True  
+
+            # Dodaj sąsiadów do stosu, omijając excluded_edge
+            for neighbor, _ in node_neighbors:
+                #Graf jest nieskierowany, więc krawędź (node, neighbor) jest taka sama jak (neighbor, node). Chcemy upewnić się, że żadna z tych dwóch wersji krawędzi nie jest tą, którą wykluczamy.
+                if not visited[neighbor - 1] and (node + 1, neighbor) != excluded_edge and (neighbor, node + 1) != excluded_edge:
+                    stack.append(neighbor - 1)  # Dodajemy 0-based index
+
+    return visited
+
+def isConnected(graph, n, start, excluded_edge):
+    """
+    Sprawdza, czy graf pozostaje spójny po usunięciu krawędzi.
+
+    :param graph: Lista sąsiedztwa reprezentująca graf (wierzchołek, sąsiad, waga).
+    :param n: Liczba wierzchołków.
+    :param start: Wierzchołek początkowy (1-based).
+    :param excluded_edge: Krawędź, którą ma zostać usunięta z grafu (w formacie (v, u)).
+    :return: True, jeśli graf pozostaje spójny, w przeciwnym razie False.
+    """
+    visited = [False] * n
+
+    # Używamy funkcji dfs_iter, sprawdzając spójność po usunięciu krawędzi
+    visited = dfs_iter(graph, start, excluded_edge)
+
+    return all(visited)
+
+def findBridges(graph, n):
+
+    bridges = []
+
+    # Iterujemy po każdej krawędzi w grafie
+    for v in range(n):
+        for u, _ in graph[v]:  # Ignorujemy wagę krawędzi
+            if v < u:  # Sprawdzamy każdą krawędź tylko raz
+                if not isConnected(graph, n, v + 1, (v + 1, u + 1)):  # Sprawdzamy, czy usunięcie krawędzi powoduje rozdzielenie
+                    bridges.append((v + 1, u + 1))
+    #Lista mostów w postaci krotek (v, u).
+    return bridges
 
 
-# # Znajdowanie mostów za pomocą algorytmu Tarjana
-# time = 0 # Deklaracja zmiennej globalnej
 
-# def find_bridges(graph, n):
-#     global time
-#     time = 0
-#     visited = [False] * (n + 1)
-#     disc = [0] * (n + 1)
-#     low = [0] * (n + 1)
-#     parent = [-1] * (n + 1)
-#     bridges = []
-
-#     for i in range(1, n + 1):
-#         if not visited[i]:
-#             bridge_util(i, visited, disc, low, parent, graph, bridges)
-
-#     # Sortowanie mostów zgodnie z wymaganiami
-#     bridges.sort(key=lambda x: (x['u'], x['v']))
-
-#     return bridges
-
-# def bridge_util(u, visited, disc, low, parent, graph, bridges):
-#     global time
-#     visited[u] = True
-#     time += 1
-#     disc[u] = low[u] = time
-
-#     # Sortowanie sąsiadów, aby zawsze wybierać najmniejszy numer
-#     neighbors = sorted(edge['to'] for edge in graph[u])
-
-#     for v in neighbors:
-#         if not visited[v]:
-#             parent[v] = u
-#             bridge_util(v, visited, disc, low, parent, graph, bridges)
-#             low[u] = min(low[u], low[v])
-
-#             if low[v] > disc[u]:
-#                 bridges.append({'u': min(u, v), 'v': max(u, v)})
-#         elif v != parent[u]:
-#             low[u] = min(low[u], disc[v])
-
-# # Usuwanie krawędzi z grafu
-# def remove_edge(graph, u, v):
-#     graph[u] = [edge for edge in graph[u] if edge['to'] != v]
-#     graph[v] = [edge for edge in graph[v] if edge['to'] != u]
 
 # # Znajdowanie komponentów spójności
 # def find_components(graph, n):
@@ -280,6 +290,12 @@ if __name__ == '__main__':
         # Wyświetlenie listy sąsiedztwa
         for node, neighbors in graph_adj_list.items():
             print(f"{node}: {neighbors}")
+
+        # Znajdowanie mostów
+        bridges = findBridges(graph_adj_list, n)
+
+        # Wyświetlenie mostów
+        print("Mosty w grafie:", bridges)
 
         # Znajdowanie mostów
 #         bridges = find_bridges(graph_adj_list, n)
@@ -381,3 +397,26 @@ if __name__ == '__main__':
 #                         stack.append(neighbor)
 
 #         return order, visited
+    
+# def isConnected(graph, n, start, excluded_edge):
+# visited = [False] * n
+
+# def dfs(v):
+#     visited[v] = True
+#     for u in graph[v]:
+#         if not visited[u] and (v, u) != excluded_edge and (u, v) != excluded_edge:
+#             dfs(u)
+
+# dfs(start)
+# return all(visited)
+
+# def findBridges(graph, n):
+#     bridges = []
+
+#     for v in range(n):
+#         for u in graph[v]:
+#             if v < u: # Sprawdź każdą krawędź tylko raz
+#                 if not isConnected(graph, n, v, (v, u)):
+#                     bridges.append((v, u))
+
+#     return bridges
