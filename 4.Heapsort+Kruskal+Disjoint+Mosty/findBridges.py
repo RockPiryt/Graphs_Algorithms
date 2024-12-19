@@ -1,61 +1,61 @@
+def dfs_iter(graph, start):
+    """
+    Przeszukiwanie grafu w głąb (DFS) w iteracyjnej wersji.
+
+    :param graph: Lista sąsiedztwa reprezentująca graf.
+    :param start: Wierzchołek początkowy (1-based).
+    :return: Kolejność odwiedzania wierzchołków (1-based) oraz lista odwiedzonych wierzchołków.
+    """
+    n = len(graph)  # Liczba wierzchołków
+    visited = [False] * n  # Wszystkie wierzchołki oznaczamy jako nieodwiedzone
+    stack = [start - 1]  # Stos zaczyna się od wierzchołka startowego (0-based)
+    order = []  # Kolejność odwiedzania wierzchołków
+
+    while stack:
+        # Pobieramy wierzchołek ze stosu
+        node = stack.pop()
+        node_neighbors = graph[node][1:]  # Pobieramy sąsiadów wierzchołka (pomijamy indeks)
+        
+        if not visited[node]:  # Jeśli wierzchołek jeszcze nie został odwiedzony
+            visited[node] = True  # Oznacz jako odwiedzony
+            order.append(node + 1)  # Dodajemy do porządku (1-based)
+
+            # Dodaj sąsiadów do stosu w odwrotnej kolejności
+            reversed_neighbors = sorted(node_neighbors, reverse=True)
+            updated_neighbors = [neighbor - 1 for neighbor in reversed_neighbors]  # Konwersja na 0-based
+            for neighbor in updated_neighbors:
+                if not visited[neighbor]:
+                    stack.append(neighbor)
+
+    return order, visited
+
+
 def isConnected(graph, n, start, excluded_edge):
-    """
-    Sprawdza, czy graf pozostaje spójny po usunięciu krawędzi.
-    
-    :param graph: Lista sąsiedztwa reprezentująca graf (wierzchołek, sąsiad, waga).
-    :param n: Liczba wierzchołków.
-    :param start: Wierzchołek początkowy.
-    :param excluded_edge: Krawędź, która ma zostać usunięta z grafu (w postaci krotki (v, u)).
-    :return: True, jeśli graf pozostaje spójny, w przeciwnym razie False.
-    """
     visited = [False] * n
 
-    # Używamy funkcji dfs_iter zamiast rekurencyjnej wersji DFS
-    def dfs_iter(graph, start):
-        n = len(graph)  # Liczba wierzchołków
-        visited = [False] * n  # Wszystkie wierzchołki oznaczamy jako nieodwiedzone
-        stack = [start]  # Stos zaczyna się od wierzchołka startowego
-        order = []  # Kolejność odwiedzania wierzchołków
+    def dfs(v):
+        visited[v] = True
+        for u, _ in graph[v]:  # Ignorujemy wagę krawędzi
+            if not visited[u - 1] and (v + 1, u) != excluded_edge and (u, v + 1) != excluded_edge:
+                dfs(u - 1)
 
-        while stack:
-            node = stack.pop()
-            if not visited[node]:
-                visited[node] = True
-                order.append(node)
-
-                # Przeglądamy sąsiadów wierzchołka
-                for neighbor, _ in graph[node]:
-                    # Ignorujemy krawędź do usunięcia
-                    if (node, neighbor) != excluded_edge and (neighbor, node) != excluded_edge:
-                        if not visited[neighbor]:
-                            stack.append(neighbor)
-
-        return visited
-
-    # Wykonaj DFS zaczynając od wierzchołka startowego
-    visited = dfs_iter(graph, start)
-
-    # Zwracamy True, jeśli wszystkie wierzchołki są odwiedzone (graf jest spójny)
+    dfs(start - 1)
     return all(visited)
 
-def findBridges(graph, n):
-    """
-    Funkcja do znajdowania mostów w grafie.
 
-    :param graph: Lista sąsiedztwa reprezentująca graf (wierzchołek, sąsiad, waga).
-    :param n: Liczba wierzchołków.
-    :return: Lista mostów w postaci krotek (v, u).
-    """
+def findBridges(graph, n):
     bridges = []
 
-    # Iterujemy po każdej krawędzi w grafie
-    for v in range(n):
-        for u, _ in graph[v]:  # Ignorujemy wagę krawędzi
-            if v < u:  # Sprawdzamy każdą krawędź tylko raz
-                if not isConnected(graph, n, v, (v, u)):  # Sprawdzamy, czy usunięcie krawędzi powoduje rozdzielenie
+    # Iteracja po wszystkich wierzchołkach
+    for v in range(1, n + 1):  # Używamy numeracji 1-based
+        for u, _ in graph[v - 1]:  # Ignorujemy wagę krawędzi i przekształcamy na 0-based
+            if v < u:  # Sprawdź każdą krawędź tylko raz
+                # Wykluczamy krawędź (v, u) i sprawdzamy, czy graf pozostaje spójny
+                if not isConnected(graph, n, v, (v, u)):
                     bridges.append((v, u))
 
     return bridges
+
 
 # Przykład grafu
 graph = {

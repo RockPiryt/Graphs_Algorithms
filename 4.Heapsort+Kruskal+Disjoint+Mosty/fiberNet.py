@@ -129,6 +129,8 @@ def kruskal(edges, n):
     
     # Sortowanie krawędzi na podstawie wagi
     heapSort(edges)
+
+    print(f"posortowane krawędzie {edges}")
     
     # Inicjalizacja listy krawędzi w MST (Minimalnym Drzewie Rozpinającym)
     mst = []
@@ -154,56 +156,50 @@ def kruskal(edges, n):
 #-----------------------------------------------------------------------------------Znajdowanie mostów za pomocą dfs
 def dfs_iter(graph, start, excluded_edge):
     """
+    Iteracyjne przeszukiwanie grafu w głąb (DFS) z pominięciem określonej krawędzi.
+
+    :param graph: Lista sąsiedztwa jako słownik {wierzchołek: [(sąsiad, waga)]}.
+    :param start: Wierzchołek początkowy (1-based).
     :param excluded_edge: Krawędź, którą chcemy pominąć (w formacie (v, u)).
-    :return: Lista odwiedzonych wierzchołków.
+    :return: Słownik odwiedzonych wierzchołków.
     """
-    n = len(graph)  # Liczba wierzchołków
-    visited = [False] * n  
-    stack = [start - 1]  # Stos zaczyna się od wierzchołka startowego (0-based)
-    
+    visited = {v: False for v in graph}  # Tworzymy słownik odwiedzonych wierzchołków
+    stack = [start]  # Stos zaczyna się od wierzchołka startowego (1-based)
+
     while stack:
         node = stack.pop()
-        node_neighbors = graph[node][1:]  # Pobieramy sąsiadów wierzchołka (pomijamy indeks)
         
-        if not visited[node]:  
-            visited[node] = True  
+        if not visited[node]:  # Jeśli wierzchołek jeszcze nie został odwiedzony
+            visited[node] = True  # Oznacz jako odwiedzony
 
-            # Dodaj sąsiadów do stosu, omijając excluded_edge
-            for neighbor, _ in node_neighbors:
-                #Graf jest nieskierowany, więc krawędź (node, neighbor) jest taka sama jak (neighbor, node). Chcemy upewnić się, że żadna z tych dwóch wersji krawędzi nie jest tą, którą wykluczamy.
-                if not visited[neighbor - 1] and (node + 1, neighbor) != excluded_edge and (neighbor, node + 1) != excluded_edge:
-                    stack.append(neighbor - 1)  # Dodajemy 0-based index
+            # Dodaj sąsiadów do stosu, pomijając excluded_edge
+            for neighbor, _ in graph[node]:
+                if not visited[neighbor] and (node, neighbor) != excluded_edge and (neighbor, node) != excluded_edge:
+                    stack.append(neighbor)
 
     return visited
 
-def isConnected(graph, n, start, excluded_edge):
-    """
-    Sprawdza, czy graf pozostaje spójny po usunięciu krawędzi.
-
-    :param graph: Lista sąsiedztwa reprezentująca graf (wierzchołek, sąsiad, waga).
-    :param n: Liczba wierzchołków.
-    :param start: Wierzchołek początkowy (1-based).
-    :param excluded_edge: Krawędź, którą ma zostać usunięta z grafu (w formacie (v, u)).
-    :return: True, jeśli graf pozostaje spójny, w przeciwnym razie False.
-    """
-    visited = [False] * n
-
-    # Używamy funkcji dfs_iter, sprawdzając spójność po usunięciu krawędzi
+# Sprawdza, czy graf pozostaje spójny po usunięciu krawędzi
+def isConnected(graph, start, excluded_edge):
+    # sprawdzam dostęp konkretnych nodów za pomocą dfs (czy istnieje ścieżka do noda) 
     visited = dfs_iter(graph, start, excluded_edge)
 
-    return all(visited)
+    #return: True, jeśli graf pozostaje spójny, w przeciwnym razie False.
+    return all(visited.values())  # Sprawdzamy, czy wszystkie wierzchołki zostały odwiedzone
+
 
 def findBridges(graph, n):
 
     bridges = []
 
     # Iterujemy po każdej krawędzi w grafie
-    for v in range(n):
-        for u, _ in graph[v]:  # Ignorujemy wagę krawędzi
+    for v in range(1, n + 1):  # Iteracja od 1 do n, bo graf jest 1-based
+        for u, _ in graph[v]:  # Pobieramy sąsiadów wierzchołka (pomijamy wagę)
             if v < u:  # Sprawdzamy każdą krawędź tylko raz
-                if not isConnected(graph, n, v + 1, (v + 1, u + 1)):  # Sprawdzamy, czy usunięcie krawędzi powoduje rozdzielenie
-                    bridges.append((v + 1, u + 1))
-    #Lista mostów w postaci krotek (v, u).
+                # Sprawdzamy, czy usunięcie krawędzi powoduje rozdzielenie
+                if not isConnected(graph, v, (v, u)):
+                    bridges.append((v, u))
+    #Lista mostów w formacie (v, u)
     return bridges
 
 
