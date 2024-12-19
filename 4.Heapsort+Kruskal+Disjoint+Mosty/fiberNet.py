@@ -1,5 +1,85 @@
 import sys
 
+# --------------------------------------------Tworzenie grafu jako listy sąsiedztwa
+def create_adjacency_list(edges):
+    """
+    Tworzy listę sąsiedztwa w postaci słownika  dla nieskierowanego grafu, uwzględniając wierzchołki bez sąsiadów (możliwość grafu niespójnego).
+    edges to Lista krawędzi, gdzie każda krawędź jest słownikiem {'a': początek, 'b': koniec, 'w': waga}.
+    """
+    adjacency_list = {}
+
+    # Dodaj wszystkie wierzchołki do listy sąsiedztwa z pustymi listami (w przypadku grafu niespójnego)
+    for edge in edges:
+        a, b = edge['a'], edge['b']
+        if a not in adjacency_list:
+            adjacency_list[a] = []
+        if b not in adjacency_list:
+            adjacency_list[b] = []
+
+    # Dodaj krawędzie do listy sąsiedztwa
+    for edge in edges:
+        a, b, w = edge['a'], edge['b'], edge['w']
+        
+        # Dodanie krawędzi (a -> b)
+        adjacency_list[a].append((b, w))
+        
+        # Dodanie krawędzi (b -> a)
+        adjacency_list[b].append((a, w))
+    
+    return adjacency_list
+
+
+# --------------------------------------------Sortowanie lity za pomocą heapSort
+def max_heapify_iter(Array, n, i):
+    # Wykonywana dopóki własność kopca nie zostanie przywrócona. Przerywana, gdy largest == i, co oznacza, że rodzic jest większy lub równy swoim dzieciom.
+    while True:
+        largest = i
+        left = 2 * i + 1
+        right = 2 * i + 2
+
+        # Porównanie największego dotychczasowego elementu z lewym dzieckiem
+        if left < n and Array[largest] < Array[left]:
+            largest = left
+
+        # Porównanie największego dotychczasowego elementu z prawym dzieckiem
+        if right < n and Array[largest] < Array[right]:
+            largest = right
+
+        # Jeśli największy element to nie rodzic, wykonaj zamianę
+        if largest != i:
+            Array[i], Array[largest] = Array[largest], Array[i]
+            # Przesuwamy się do dziecka i kontynuujemy przywracanie własności kopca
+            i = largest
+        else:
+            # Własność kopca została przywrócona
+            break
+
+def heapSort(Array):
+    n=len(Array)
+    lastElement = n - 1 
+    firstElement = 0 
+    step = -1 # cofanie
+    for i in range (lastElement, firstElement, step):# i to  aktualna ilość elementów do sortowania, najpierw są wszystkie elementy, potem o 1 mniej itd.  6,5,4,3,2,1
+        #Zmiana największego elementu z Max heap (root) z ostatnim elementem
+        Array[i], Array[firstElement] =  Array[firstElement], Array[i]
+
+        #przywracanie własności kopca metoda iteraycjna
+        max_heapify_iter(Array, i , firstElement)
+
+
+# Jednoznaczny wybór krawędzi:
+# Pierwszeństwo mają krawędzie o mniejszej wadze
+# Przy równych wagach decyduje mniejszy numer pierwszego wierzchołka
+# Przy równych pierwszych wierzchołkach decyduje mniejszy numer drugiego wierzchołka
+# Funkcja porównująca krawędzie zgodnie z podanymi kryteriami
+def compare_edges(edge1, edge2):
+    if edge1['w'] != edge2['w']:
+        return edge2['w'] - edge1['w'] # Dla max-heap
+    if edge1['a'] != edge2['a']:
+        return edge2['a'] - edge1['a']
+    if edge1['b'] != edge2['b']:
+        return edge2['b'] - edge1['b']
+    return 0
 
 # # Implementacja algorytmu Kruskala
 # def kruskal(edges, n):
@@ -19,37 +99,9 @@ import sys
 
 #     return minSpinalTree
 
-# # Implementacja HeapSort
-# def heap_sort(array):
-#     n = len(array)
 
-#     # Budowanie kopca (max-heap)
-#     for i in range(n // 2 - 1, -1, -1):
-#         heapify(array, n, i)
 
-#     # Wyciąganie elementów z kopca
-#     for i in range(n - 1, -1, -1):
-#         array[0], array[i] = array[i], array[0]
-#         heapify(array, i, 0)
 
-#     # Odwrócenie tablicy, aby uzyskać sortowanie rosnące
-#     array.reverse()
-
-# # Funkcja heapify
-# def heapify(array, n, i):
-#     largest = i
-#     l = 2 * i + 1
-#     r = 2 * i + 2
-
-#     if l < n and compare_edges(array[l], array[largest]) > 0:
-#         largest = l
-
-#     if r < n and compare_edges(array[r], array[largest]) > 0:
-#         largest = r
-
-#     if largest != i:
-#         array[i], array[largest] = array[largest], array[i]
-#         heapify(array, n, largest)
 
 # # Funkcja porównująca krawędzie zgodnie z podanymi kryteriami
 # def compare_edges(edge1, edge2):
@@ -72,13 +124,7 @@ import sys
 #     yroot = find(parent, y)
 #     parent[yroot] = xroot
 
-# # Budowanie grafu jako listy sąsiedztwa
-# def build_graph(edges, n):
-#     graph = {i: [] for i in range(1, n + 1)}
-#     for edge in edges:
-#         graph[edge['a']].append({'to': edge['b']})
-#         graph[edge['b']].append({'to': edge['a']})
-#     return graph
+
 
 # # Znajdowanie mostów za pomocą algorytmu Tarjana
 # time = 0 # Deklaracja zmiennej globalnej
@@ -189,7 +235,7 @@ if __name__ == '__main__':
                 a, b = b, a
             edges.append({'a': a, 'b': b, 'w': w})
 
-        print(f"o to krawędzie z wagami {edges}")
+        print(f"Krawędzie z wagami {edges}")
 
 #         # Wykonanie algorytmu Kruskala
 #         minSpinalTree = kruskal(edges, n)
@@ -202,9 +248,23 @@ if __name__ == '__main__':
 #             total_cost += edge['w']
 #         print(f'Łączny koszt: {total_cost}')
 
-#         # Budowanie grafu oryginalnego
-#         graph = build_graph(edges, n)
+        
+        # Budowanie grafu oryginalnego jako lista sąsiedztwa 
+        graph_adj_list = create_adjacency_list(edges)
+        # Wyświetlenie listy sąsiedztwa
+        for node, neighbors in graph_adj_list.items():
+            print(f"{node}: {neighbors}")
 
+        # Znajdowanie mostów
+#         bridges = find_bridges(graph_adj_list, n)
+            
+
+
+
+
+        # # Budowanie grafu oryginalnego
+        # graph = build_graph(edges, n)
+        # print(f"Graf jako lista sąsiedztwa {graph}")
 #         # Znajdowanie mostów
 #         bridges = find_bridges(graph, n)
 
