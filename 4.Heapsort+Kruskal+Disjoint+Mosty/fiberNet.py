@@ -154,54 +154,51 @@ def kruskal(edges, n):
     return mst, total_weight
 
 #-----------------------------------------------------------------------------------Znajdowanie mostów za pomocą dfs
-def dfs_iter(graph, start, excluded_edge):
+# Sprawdza, czy wierzchołek `end` jest osiągalny z wierzchołka `start`  po usunięciu krawędzi `excluded_edge`.
+def isConnected(graph, start, end, excluded_edge):
     """
-    Iteracyjne przeszukiwanie grafu w głąb (DFS) z pominięciem określonej krawędzi.
-
-    :param graph: Lista sąsiedztwa jako słownik {wierzchołek: [(sąsiad, waga)]}.
-    :param start: Wierzchołek początkowy (1-based).
-    :param excluded_edge: Krawędź, którą chcemy pominąć (w formacie (v, u)).
-    :return: Słownik odwiedzonych wierzchołków.
+    :param excluded_edge: Krawędź do pominięcia (w formacie (v, u)).
+    :return: True, jeśli `end` jest osiągalny z `start`, w przeciwnym razie False.
     """
-    visited = {v: False for v in graph}  # Tworzymy słownik odwiedzonych wierzchołków
-    stack = [start]  # Stos zaczyna się od wierzchołka startowego (1-based)
+    visited = {v: False for v in graph}
+    stack = [start]
 
     while stack:
         node = stack.pop()
-        
-        if not visited[node]:  # Jeśli wierzchołek jeszcze nie został odwiedzony
-            visited[node] = True  # Oznacz jako odwiedzony
-
-            # Dodaj sąsiadów do stosu, pomijając excluded_edge
+        if node == end:
+            return True  # Znaleziono połączenie między start a end
+        if not visited[node]:
+            visited[node] = True
             for neighbor, _ in graph[node]:
-                if not visited[neighbor] and (node, neighbor) != excluded_edge and (neighbor, node) != excluded_edge:
+                if (node, neighbor) != excluded_edge and (neighbor, node) != excluded_edge:
                     stack.append(neighbor)
 
-    return visited
+    return False  # Nie znaleziono połączenia
 
-# Sprawdza, czy graf pozostaje spójny po usunięciu krawędzi
-def isConnected(graph, start, excluded_edge):
-    # sprawdzam dostęp konkretnych nodów za pomocą dfs (czy istnieje ścieżka do noda) 
-    visited = dfs_iter(graph, start, excluded_edge)
-
-    #return: True, jeśli graf pozostaje spójny, w przeciwnym razie False.
-    return all(visited.values())  # Sprawdzamy, czy wszystkie wierzchołki zostały odwiedzone
-
-
-def findBridges(graph, n):
-
+def findBridges(graph):
     bridges = []
 
-    # Iterujemy po każdej krawędzi w grafie
-    for v in range(1, n + 1):  # Iteracja od 1 do n, bo graf jest 1-based
-        for u, _ in graph[v]:  # Pobieramy sąsiadów wierzchołka (pomijamy wagę)
-            if v < u:  # Sprawdzamy każdą krawędź tylko raz
-                # Sprawdzamy, czy usunięcie krawędzi powoduje rozdzielenie
-                if not isConnected(graph, v, (v, u)):
+    for v in graph:
+        for u, _ in graph[v]:
+            if v < u:  # Rozważamy każdą krawędź tylko raz
+                # Sprawdzamy, czy usunięcie krawędzi powoduje rozdzielenie wierzchołków v i u
+                if not isConnected(graph, v, u, (v, u)):
                     bridges.append((v, u))
-    #Lista mostów w formacie (v, u)
+    #zwraca krotki
     return bridges
 
+def removeBridges(graph, bridges):
+
+    # Usuwanie mostów z listy sąsiedztwa
+    for bridge in bridges:
+        v, u = bridge
+        
+        # Usuwamy krawędź v -> u i u -> v
+        graph[v] = [(neighbor, weight) for neighbor, weight in graph[v] if neighbor != u]
+        graph[u] = [(neighbor, weight) for neighbor, weight in graph[u] if neighbor != v]
+    
+    #Zaktualizowana lista sąsiedztwa po usunięciu mostów.
+    return graph
 
 
 
@@ -284,26 +281,29 @@ if __name__ == '__main__':
         # Budowanie grafu oryginalnego jako lista sąsiedztwa 
         graph_adj_list = create_adjacency_list(edges)
         # Wyświetlenie listy sąsiedztwa
+        print("lista sąsiedztwa")
         for node, neighbors in graph_adj_list.items():
             print(f"{node}: {neighbors}")
 
         # Znajdowanie mostów
-        bridges = findBridges(graph_adj_list, n)
+        bridges = findBridges(graph_adj_list)
 
-        # Wyświetlenie mostów
-        print("Mosty w grafie:", bridges)
+        # Wyświetlanie mostów
+        print('\nMOSTY:')
+        if len(bridges) == 0:
+            print('BRAK MOSTÓW')
+        else:
+            for bridge in bridges:
+                print(f"{bridge[0]} {bridge[1]}")  
 
-        # Znajdowanie mostów
-#         bridges = find_bridges(graph_adj_list, n)
-            
+        # Usuwanie mostów z grafu
+        graph_adj_list = removeBridges(graph_adj_list, bridges)
 
-#         # Wyświetlanie mostów
-#         print('\nMOSTY:')
-#         if len(bridges) == 0:
-#             print('BRAK MOSTÓW')
-#         else:
-#             for bridge in bridges:
-#                 print(f"{bridge['u']} {bridge['v']}")
+        # Wyświetlanie zaktualizowanej listy sąsiedztwa po usunięciu mostów
+        print("\nZaktualizowana lista sąsiedztwa po usunięciu mostów:")
+        for node, neighbors in graph_adj_list.items():
+            print(f"{node}: {neighbors}")
+
 
 #         # Usunięcie mostów z grafu
 #         for bridge in bridges:
