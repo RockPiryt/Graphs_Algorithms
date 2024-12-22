@@ -1,32 +1,6 @@
 import sys
 
-# --------------------------------------------Tworzenie grafu jako listy sąsiedztwa
-def create_adjacency_list(edges):
-    """
-    Tworzy listę sąsiedztwa w postaci słownika  dla nieskierowanego grafu, uwzględniając wierzchołki bez sąsiadów (możliwość grafu niespójnego).
-    edges to Lista krawędzi, gdzie każda krawędź jest słownikiem {'a': początek, 'b': koniec, 'w': waga}.
-    """
-    adjacency_list = {}
 
-    # Dodaj wszystkie wierzchołki do listy sąsiedztwa z pustymi listami (w przypadku grafu niespójnego)
-    for edge in edges:
-        a, b = edge['a'], edge['b']
-        if a not in adjacency_list:
-            adjacency_list[a] = []
-        if b not in adjacency_list:
-            adjacency_list[b] = []
-
-    # Dodaj krawędzie do listy sąsiedztwa
-    for edge in edges:
-        a, b, w = edge['a'], edge['b'], edge['w']
-        
-        # Dodanie krawędzi (a -> b)
-        adjacency_list[a].append((b, w))
-        
-        # Dodanie krawędzi (b -> a)
-        adjacency_list[b].append((a, w))
-    
-    return adjacency_list
 
 # --------------------------------------------Sortowanie lity za pomocą heapSort
 def compare_edges(edge1, edge2):
@@ -41,51 +15,52 @@ def compare_edges(edge1, edge2):
         return edge1['b'] - edge2['b']  
     return 0  # Są równe
 
-def max_heapify_iter(Array, n, i):
-    # Wykonywana dopóki własność kopca nie zostanie przywrócona. Przerywana, gdy largest == i, co oznacza, że rodzic jest większy lub równy swoim dzieciom.
+# Do sortowania komponentów
+def compare_numbers(num1, num2):
+    return num1 - num2  
+
+# Funkcja max_heapify dla iteracyjnego przywracania własności kopca
+def max_heapify_iter(Array, n, i, compare):
     while True:
         largest = i
         left = 2 * i + 1
         right = 2 * i + 2
 
         # Porównanie największego dotychczasowego elementu z lewym dzieckiem
-        # if left < n and Array[left] > Array[largest] :
-        if left < n and compare_edges(Array[left], Array[largest]) > 0:
+        if left < n and compare(Array[left], Array[largest]) > 0:
             largest = left
 
         # Porównanie największego dotychczasowego elementu z prawym dzieckiem
-        # if right < n and Array[right] > Array[largest]:
-        if right < n and compare_edges(Array[right], Array[largest]) > 0:
+        if right < n and compare(Array[right], Array[largest]) > 0:
             largest = right
 
         # Jeśli największy element to nie rodzic, wykonaj zamianę
         if largest != i:
             Array[i], Array[largest] = Array[largest], Array[i]
-            # Przesuwamy się do dziecka i kontynuujemy przywracanie własności kopca
             i = largest
         else:
-            # Własność kopca została przywrócona
             break
 
-def heapSort(Array):
-    n=len(Array)
+# Funkcja heapsort, sortująca listę przy użyciu kopca
+def heapSort(Array, compare):
+    n = len(Array)
 
-    # Build Heap Max
-    lpn = n//2 - 1 #last parent node
-    end = -1 #aby objeło także index 0 
-    step = -1 # cofanie się o krok ndeksy odwiedzane przez pętlę: lpn =2, lpn-1=1 lpn-2=0(root)
+    # Budowanie kopca max
+    lpn = n // 2 - 1  # ostatni węzeł rodzica
+    end = -1  # aby obejmowało także index 0 
+    step = -1  # cofanie się o krok
     for i in range(lpn, end, step):
-        max_heapify_iter(Array, n, i)
+        max_heapify_iter(Array, n, i, compare)
 
-     # Sortowanie kopcowe
-    lastElement = n - 1 
-    step = -1 # cofanie
-    for i in range (lastElement, 0, step):# i to  aktualna ilość elementów do sortowania, najpierw są wszystkie elementy, potem o 1 mniej itd.  6,5,4,3,2,1
-        #Zmiana największego elementu z Max heap (root) z ostatnim elementem
-        Array[i], Array[0] =  Array[0], Array[i]
+    # Sortowanie kopcowe
+    lastElement = n - 1
+    step = -1  # cofanie
+    for i in range(lastElement, 0, step):  # i to aktualna ilość elementów do sortowania
+        # Zmiana największego elementu z Max heap (root) z ostatnim elementem
+        Array[i], Array[0] = Array[0], Array[i]
 
-          # Przywracanie własności kopca dla zmniejszonej tablicy
-        max_heapify_iter(Array, i , 0)
+        # Przywracanie własności kopca dla zmniejszonej tablicy
+        max_heapify_iter(Array, i, 0, compare)
 
 
 # ----------------------------------------DisjointSet
@@ -128,11 +103,6 @@ def kruskal(edges, n):
     # Inicjalizacja zbiorów rozłącznych
     ds = DisjointSet(n)
     
-    # Sortowanie krawędzi na podstawie wagi
-    heapSort(edges)
-
-    print(f"posortowane krawędzie {edges}")
-    
     # Inicjalizacja listy krawędzi w MST (Minimalnym Drzewie Rozpinającym)
     mst = []
     total_weight = 0
@@ -155,12 +125,17 @@ def kruskal(edges, n):
     return mst, total_weight
 
 #-----------------------------------------------------------------------------------Znajdowanie mostów za pomocą dfs
-def dfs(graph, start, visited, component=None, excluded_edge=None):
+def dfs(edges, start, visited, component=None, excluded_edge=None):
     """
+    Przeszukiwanie grafu w głąb.
+
+    :param edges: Lista krawędzi w formacie [{'a': początkowy node, 'b': końcowy node, 'w': waga}].
+    :param start: Wierzchołek początkowy.
+    :param visited: Słownik śledzący odwiedzone wierzchołki.
     :param component: Lista do zapisywania wierzchołków aktualnego komponentu (opcjonalnie).
     :param excluded_edge: Krawędź do pominięcia w formacie (v, u) (opcjonalnie).
     """
-    stack = [start]
+    stack = [start]  # Stos do śledzenia wierzchołków do odwiedzenia
     while stack:
         node = stack.pop()
         if not visited[node]:
@@ -168,64 +143,92 @@ def dfs(graph, start, visited, component=None, excluded_edge=None):
             if component is not None:
                 component.append(node)
 
-            # Zbieranie sąsiadów i sortowanie ich za pomocą heapSort
-            neighbors = [(neighbor, weight) for neighbor, weight in graph[node] 
-                         if excluded_edge is None or (node, neighbor) != excluded_edge and (neighbor, node) != excluded_edge]
-            
-            neighbor_nodes = [neighbor for neighbor, _ in neighbors]
-            heapSort(neighbor_nodes)  # Sortowanie sąsiadów
-            
-            for neighbor in neighbor_nodes:
+            # Znajdź sąsiadów wierzchołka
+            neighbors = []
+            for edge in edges:
+                if edge['a'] == node and (excluded_edge is None or (node, edge['b']) != excluded_edge):
+                    neighbors.append(edge['b'])
+                elif edge['b'] == node and (excluded_edge is None or (node, edge['a']) != excluded_edge):
+                    neighbors.append(edge['a'])
+
+            # Dodaj sąsiadów do stosu
+            for neighbor in neighbors:
                 if not visited[neighbor]:
                     stack.append(neighbor)
 
-def findBridges(graph):
-    """
-    Znajduje mosty w grafie.
 
-    :param graph: Lista sąsiedztwa jako słownik {wierzchołek: [(sąsiad, waga)]}.
+#Sprawdza każdą krawędź, wykluczając ją z grafu, i wykonuje DFS. Jeśli wierzchołek końcowy tej krawędzi jest nieosiągalny, to jest to most.
+def findBridges(edges):
+    """
+    Znajduje mosty w grafie reprezentowanym jako lista krawędzi.
+
+    :param edges: Lista krawędzi w formacie [{'a': początkowy node, 'b': końcowy node, 'w': waga}].
     :return: Lista mostów w formacie [(v, u)].
     """
     bridges = []
 
-    for v in graph:
-        for u, _ in graph[v]:
-            if v < u:  # Rozważamy każdą krawędź tylko raz
-                # Sprawdzamy, czy usunięcie krawędzi (v, u) powoduje rozdzielenie grafu
-                visited = {node: False for node in graph}
-                dfs(graph, v, visited, excluded_edge=(v, u))
-                if not visited[u]:  # Jeśli u nie zostało odwiedzone, to (v, u) jest mostem
-                    bridges.append((v, u))
+    # Zbierz wszystkie wierzchołki w grafie
+    nodes = set()
+    for edge in edges:
+        nodes.add(edge['a'])
+        nodes.add(edge['b'])
+
+    # Sprawdzamy każdą krawędź, czy jest mostem
+    for edge in edges:
+        v, u = edge['a'], edge['b']
+
+        # Tworzymy odwiedzone wierzchołki
+        visited = {node: False for node in nodes}
+
+        # Wykonaj DFS z wykluczeniem tej krawędzi
+        dfs(edges, v, visited, excluded_edge=(v, u))
+
+        # Jeśli wierzchołek u nie został odwiedzony, to (v, u) jest mostem
+        if not visited[u]:
+            bridges.append((v, u))
 
     return bridges
 
 
+
 #---------------------------------------------------------------Szukanie komponentów
-def removeBridges(graph, bridges):
+def removeBridges(edges, bridges):
+    """
+    Usuwa mosty z listy krawędzi.
 
-    # Usuwanie mostów z listy sąsiedztwa
-    for bridge in bridges:
-        v, u = bridge
-        
-        # Usuwamy krawędź v -> u i u -> v
-        graph[v] = [(neighbor, weight) for neighbor, weight in graph[v] if neighbor != u]
-        graph[u] = [(neighbor, weight) for neighbor, weight in graph[u] if neighbor != v]
-    
-    #Zaktualizowana lista sąsiedztwa po usunięciu mostów.
-    return graph
+    :param edges: Lista krawędzi w formacie [{'a': początkowy node, 'b': końcowy node, 'w': waga}].
+    :param bridges: Lista mostów w formacie [(v, u)].
+    :return: Lista krawędzi bez mostów.
+    """
+    new_edges = []
+    for edge in edges:
+        # Jeśli krawędź nie jest mostem, dodaj ją do nowej listy
+        if (edge['a'], edge['b']) not in bridges and (edge['b'], edge['a']) not in bridges:
+            new_edges.append(edge)
 
-def findComponents(graph):
+    return new_edges
+
+
+def findComponents(edges):
     """
     Znajduje komponenty spójności w grafie.
+
+    :param edges: Lista krawędzi w formacie [{'a': początkowy node, 'b': końcowy node, 'w': waga}].
+    :return: Lista komponentów spójności, posortowanych rosnąco.
     """
-    visited = {v: False for v in graph}
+    visited = {edge['a']: False for edge in edges}
+    visited.update({edge['b']: False for edge in edges})  # Dodaj również końcowe wierzchołki
     components = []
-    for node in graph:
+
+    # Przechodzimy przez wszystkie wierzchołki
+    for node in visited.keys():
         if not visited[node]:
             component = []
-            dfs(graph, node, visited, component)
+            dfs(edges, node, visited, component)  # Użycie uniwersalnego DFS
+            heapSort(component, compare_numbers)# Sortowanie komponentu za pomocą heapSort
             components.append(component)
-    heapSort(components)
+
+    heapSort(components, compare_numbers)  # Sortowanie komponentów spójności
     return components
 
 if __name__ == '__main__':
@@ -266,6 +269,11 @@ if __name__ == '__main__':
 
         print(f"Krawędzie z wagami {edges}")
 
+        # Sortowanie krawędzi na podstawie wagi
+        heapSort(edges, compare_edges)
+
+        print(f"posortowane krawędzie {edges}")
+
         minSpinalTree, total_weight = kruskal(edges, n)
 
         # Wyświetlenie minimalnego drzewa spinającego
@@ -277,15 +285,8 @@ if __name__ == '__main__':
         print(f'Łączny koszt: {total_cost}')
 
         #-----------------------------------------------------------Szukanie mostów    
-        # Budowanie grafu oryginalnego jako lista sąsiedztwa 
-        graph_adj_list = create_adjacency_list(edges)
-        # Wyświetlenie listy sąsiedztwa
-        print("lista sąsiedztwa")
-        for node, neighbors in graph_adj_list.items():
-            print(f"{node}: {neighbors}")
-
-        # Znajdowanie mostów
-        bridges = findBridges(graph_adj_list)
+        # Wyszukiwanie mostów
+        bridges = findBridges(edges)
 
         # Wyświetlanie mostów
         print('\nMOSTY:')
@@ -294,19 +295,15 @@ if __name__ == '__main__':
         else:
             for bridge in bridges:
                 print(f"{bridge[0]} {bridge[1]}")  
+        # --------------------------------------------------------Szukanie komponentów
+        # Usuwanie mostów
+        edges_without_bridges = removeBridges(edges, bridges)
+        print("\nKrawędzie po usunięciu mostów:")
+        for edge in edges_without_bridges:
+            print(edge)
 
-        # ------------------------------------------------szukanie komponentów
-
-        # Usuwanie mostów z grafu
-        graph_adj_list = removeBridges(graph_adj_list, bridges)
-
-        # Wyświetlanie zaktualizowanej listy sąsiedztwa po usunięciu mostów
-        print("\nZaktualizowana lista sąsiedztwa po usunięciu mostów:")
-        for node, neighbors in graph_adj_list.items():
-            print(f"{node}: {neighbors}")
-        
-        # Znalezienie komponentów spójności
-        components = findComponents(graph_adj_list)
+        # Znajdowanie komponentów spójności
+        components = findComponents(edges_without_bridges)
 
         # Wyświetlanie komponentów
         print('\nKOMPONENTY:')
