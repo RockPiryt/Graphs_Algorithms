@@ -15,9 +15,12 @@ def compare_edges(edge1, edge2):
         return edge1['b'] - edge2['b']  
     return 0  # Są równe
 
-# Do sortowania komponentów
 def compare_numbers(num1, num2):
-    return num1 - num2  
+    if isinstance(num1, list) and isinstance(num2, list):
+        # Porównanie długości komponentów (list)
+        return len(num1) - len(num2)
+    return num1 - num2  # Normalne porównanie liczb
+
 
 # Funkcja max_heapify dla iteracyjnego przywracania własności kopca
 def max_heapify_iter(Array, n, i, compare):
@@ -128,12 +131,7 @@ def kruskal(edges, n):
 def dfs(edges, start, visited, component=None, excluded_edge=None):
     """
     Przeszukiwanie grafu w głąb.
-
-    :param edges: Lista krawędzi w formacie [{'a': początkowy node, 'b': końcowy node, 'w': waga}].
-    :param start: Wierzchołek początkowy.
-    :param visited: Słownik śledzący odwiedzone wierzchołki.
-    :param component: Lista do zapisywania wierzchołków aktualnego komponentu (opcjonalnie).
-    :param excluded_edge: Krawędź do pominięcia w formacie (v, u) (opcjonalnie).
+    :param excluded_edge: Krawędź do pominięcia w formacie (v, u).
     """
     stack = [start]  # Stos do śledzenia wierzchołków do odwiedzenia
     while stack:
@@ -141,9 +139,10 @@ def dfs(edges, start, visited, component=None, excluded_edge=None):
         if not visited[node]:
             visited[node] = True
             if component is not None:
-                component.append(node)
+                component.append(node)  # Dodajemy wierzchołek do komponentu
+            # print(f"Odvisytowano wierzchołek: {node}")  # Debugowanie
 
-            # Znajdź sąsiadów wierzchołka
+            # Znajdź sąsiadów wierzchołka, z pominięciem excluded_edge
             neighbors = []
             for edge in edges:
                 if edge['a'] == node and (excluded_edge is None or (node, edge['b']) != excluded_edge):
@@ -191,48 +190,69 @@ def findBridges(edges):
 
 
 
-#---------------------------------------------------------------Szukanie komponentów
-def removeBridges(edges, bridges):
-    """
-    Usuwa mosty z listy krawędzi.
 
-    :param edges: Lista krawędzi w formacie [{'a': początkowy node, 'b': końcowy node, 'w': waga}].
-    :param bridges: Lista mostów w formacie [(v, u)].
-    :return: Lista krawędzi bez mostów.
+#---------------------------------------------------------------Szukanie komponentów
+def removeBridges(edges, bridges, nodes):
+    """
+    Usuwa mosty z listy krawędzi, ale zachowuje wszystkie wierzchołki.
     """
     new_edges = []
+    
+    # Dodajemy wszystkie krawędzie, które nie są mostami
     for edge in edges:
-        # Jeśli krawędź nie jest mostem, dodaj ją do nowej listy
-        if (edge['a'], edge['b']) not in bridges and (edge['b'], edge['a']) not in bridges:
+        if not any((edge['a'] == bridge[0] and edge['b'] == bridge[1]) or (edge['a'] == bridge[1] and edge['b'] == bridge[0]) for bridge in bridges):
             new_edges.append(edge)
 
+    # Upewniamy się, że graf zawiera wszystkie wierzchołki (nawet izolowane)
+    for node in nodes:
+        # Dodajemy wierzchołki jako osobne krawędzie bezpośrednie (izolowane wierzchołki)
+        if not any(edge['a'] == node or edge['b'] == node for edge in new_edges):
+            new_edges.append({'a': node, 'b': node, 'w': 0})  # Krawędź do samego siebie
+
+    # Teraz posortuj krawędzie przed dalszym przetwarzaniem
+    heapSort(new_edges, compare_edges)  # Sortowanie krawędzi
+
     return new_edges
+
+
+
 
 
 def findComponents(edges):
     """
     Znajduje komponenty spójności w grafie.
-
-    :param edges: Lista krawędzi w formacie [{'a': początkowy node, 'b': końcowy node, 'w': waga}].
-    :return: Lista komponentów spójności, posortowanych rosnąco.
     """
-    visited = {edge['a']: False for edge in edges}
-    visited.update({edge['b']: False for edge in edges})  # Dodaj również końcowe wierzchołki
+    nodes = set()
+    for edge in edges:
+        nodes.add(edge['a'])
+        nodes.add(edge['b'])
+    
+    visited = {node: False for node in nodes}
     components = []
 
-    # Przechodzimy przez wszystkie wierzchołki
     for node in visited.keys():
         if not visited[node]:
             component = []
-            dfs(edges, node, visited, component)  # Użycie uniwersalnego DFS
-            heapSort(component, compare_numbers)# Sortowanie komponentu za pomocą heapSort
+            # Rozpoczynamy DFS od wierzchołka
+            dfs(edges, node, visited, component)
+            # Posortuj komponent przy użyciu heapSort
+            heapSort(component, compare_numbers)  # Sortowanie elementów w komponencie
             components.append(component)
 
-    heapSort(components, compare_numbers)  # Sortowanie komponentów spójności
+    # Sprawdzamy wierzchołki, które nie zostały odwiedzone (izolowane wierzchołki)
+    isolated_nodes = [node for node in nodes if not visited[node]]
+    for isolated_node in isolated_nodes:
+        components.append([isolated_node])  # Dodajemy jako osobny komponent
+
+    # Sortowanie komponentów
+    heapSort(components, compare_numbers)  # Sortowanie komponentów według numerów wierzchołków
+
     return components
 
+
+
 if __name__ == '__main__':
-    #try:
+    try:
         input_lines = sys.stdin.read().strip().split('\n')
 
         # Sprawdzenie minimalnej liczby linii
@@ -247,8 +267,8 @@ if __name__ == '__main__':
         if n < 2 or n > 100 or m < n - 1 or m > (n * (n - 1)) // 2:
             raise ValueError('BŁĄD')
         
-        print(f"Liczba  nodów: {n}")
-        print(f"Liczba  możliwych połączeń: {m}")
+        # print(f"Liczba  nodów: {n}")
+        # print(f"Liczba  możliwych połączeń: {m}")
 
         # Odczytanie krawędzi
         edges = []
@@ -267,12 +287,13 @@ if __name__ == '__main__':
                 a, b = b, a
             edges.append({'a': a, 'b': b, 'w': w})
 
-        print(f"Krawędzie z wagami {edges}")
+
+        # print(f"Krawędzie z wagami {edges}")
 
         # Sortowanie krawędzi na podstawie wagi
         heapSort(edges, compare_edges)
 
-        print(f"posortowane krawędzie {edges}")
+        # print(f"posortowane krawędzie {edges}")
 
         minSpinalTree, total_weight = kruskal(edges, n)
 
@@ -296,21 +317,31 @@ if __name__ == '__main__':
             for bridge in bridges:
                 print(f"{bridge[0]} {bridge[1]}")  
         # --------------------------------------------------------Szukanie komponentów
-        # Usuwanie mostów
-        edges_without_bridges = removeBridges(edges, bridges)
-        print("\nKrawędzie po usunięciu mostów:")
-        for edge in edges_without_bridges:
-            print(edge)
 
-        # Znajdowanie komponentów spójności
+        # Usuwanie mostów
+        nodes = set()
+        for edge in edges:
+            nodes.add(edge['a'])
+            nodes.add(edge['b'])
+
+        edges_without_bridges = removeBridges(edges, bridges, nodes)
+
         components = findComponents(edges_without_bridges)
+        # print(f"Komponenty przed sortowaniem: {components}")
+
+        heapSort(components, compare_numbers)
+
+        # print(f"Komponenty po sortowaniu: {components}")
 
         # Wyświetlanie komponentów
         print('\nKOMPONENTY:')
         components_str = ' '.join(['[' + ' '.join(map(str, comp)) + ']' for comp in components])
         print(f"{len(components)} KOMPONENTY: {components_str}")
 
-    #except Exception:
-        # print('BŁĄD')
+
+
+    except Exception:
+        print('BŁĄD')
+
 
 
