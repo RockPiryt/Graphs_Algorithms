@@ -87,6 +87,7 @@ def heapSort(Array):
           # Przywracanie własności kopca dla zmniejszonej tablicy
         max_heapify_iter(Array, i , 0)
 
+
 # ----------------------------------------DisjointSet
 class DisjointSet:
     def __init__(self, n):
@@ -154,42 +155,6 @@ def kruskal(edges, n):
     return mst, total_weight
 
 #-----------------------------------------------------------------------------------Znajdowanie mostów za pomocą dfs
-# Sprawdza, czy wierzchołek `end` jest osiągalny z wierzchołka `start`  po usunięciu krawędzi `excluded_edge`.
-def isConnected(graph, start, end, excluded_edge):
-    """
-    :param excluded_edge: Krawędź do pominięcia (w formacie (v, u)).
-    :return: True, jeśli `end` jest osiągalny z `start`, w przeciwnym razie False.
-    """
-    visited = {v: False for v in graph}
-    stack = [start]
-
-    while stack:
-        node = stack.pop()
-        if node == end:
-            return True  # Znaleziono połączenie między start a end
-        if not visited[node]:
-            visited[node] = True
-            for neighbor, _ in graph[node]:
-                if (node, neighbor) != excluded_edge and (neighbor, node) != excluded_edge:
-                    stack.append(neighbor)
-
-    return False  # Nie znaleziono połączenia
-
-
-def removeBridges(graph, bridges):
-
-    # Usuwanie mostów z listy sąsiedztwa
-    for bridge in bridges:
-        v, u = bridge
-        
-        # Usuwamy krawędź v -> u i u -> v
-        graph[v] = [(neighbor, weight) for neighbor, weight in graph[v] if neighbor != u]
-        graph[u] = [(neighbor, weight) for neighbor, weight in graph[u] if neighbor != v]
-    
-    #Zaktualizowana lista sąsiedztwa po usunięciu mostów.
-    return graph
-#---------------------------------------------------------------Szukanie komponentów
-#nowe do wspólnego dfs
 def dfs(graph, start, visited, component=None, excluded_edge=None):
     """
     :param component: Lista do zapisywania wierzchołków aktualnego komponentu (opcjonalnie).
@@ -202,10 +167,17 @@ def dfs(graph, start, visited, component=None, excluded_edge=None):
             visited[node] = True
             if component is not None:
                 component.append(node)
-            for neighbor, _ in graph[node]:
-                if excluded_edge is None or (node, neighbor) != excluded_edge and (neighbor, node) != excluded_edge:
-                    if not visited[neighbor]:
-                        stack.append(neighbor)
+
+            # Zbieranie sąsiadów i sortowanie ich za pomocą heapSort
+            neighbors = [(neighbor, weight) for neighbor, weight in graph[node] 
+                         if excluded_edge is None or (node, neighbor) != excluded_edge and (neighbor, node) != excluded_edge]
+            
+            neighbor_nodes = [neighbor for neighbor, _ in neighbors]
+            heapSort(neighbor_nodes)  # Sortowanie sąsiadów
+            
+            for neighbor in neighbor_nodes:
+                if not visited[neighbor]:
+                    stack.append(neighbor)
 
 def findBridges(graph):
     """
@@ -227,6 +199,21 @@ def findBridges(graph):
 
     return bridges
 
+
+#---------------------------------------------------------------Szukanie komponentów
+def removeBridges(graph, bridges):
+
+    # Usuwanie mostów z listy sąsiedztwa
+    for bridge in bridges:
+        v, u = bridge
+        
+        # Usuwamy krawędź v -> u i u -> v
+        graph[v] = [(neighbor, weight) for neighbor, weight in graph[v] if neighbor != u]
+        graph[u] = [(neighbor, weight) for neighbor, weight in graph[u] if neighbor != v]
+    
+    #Zaktualizowana lista sąsiedztwa po usunięciu mostów.
+    return graph
+
 def findComponents(graph):
     """
     Znajduje komponenty spójności w grafie.
@@ -242,7 +229,7 @@ def findComponents(graph):
     return components
 
 if __name__ == '__main__':
-    try:
+    #try:
         input_lines = sys.stdin.read().strip().split('\n')
 
         # Sprawdzenie minimalnej liczby linii
@@ -326,7 +313,7 @@ if __name__ == '__main__':
         components_str = ' '.join(['[' + ' '.join(map(str, comp)) + ']' for comp in components])
         print(f"{len(components)} KOMPONENTY: {components_str}")
 
-    except Exception:
-        print('BŁĄD')
+    #except Exception:
+        # print('BŁĄD')
 
 
