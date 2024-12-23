@@ -1,44 +1,3 @@
-import sys
-
-# Funkcja wczytująca dane z wejścia
-def read_graph_and_vertex():
-    """Funkcja wczytująca graf jako macierz sąsiedztwa z wagami oraz wierzchołek startowy."""
-    try:
-        input_data = sys.stdin.read().strip()
-        if not input_data:
-            return None, None, True
-
-        lines = input_data.split('\n')
-        if len(lines) < 2:
-            return None, None, True
-
-        graph = []
-        # Wczytujemy macierz sąsiedztwa (wagi krawędzi)
-        for line in lines[:-1]:
-            if line.strip():
-                try:
-                    weights = list(map(int, line.split()))
-                    if len(weights) != len(lines) - 1:  # Sprawdzamy, czy liczba kolumn jest odpowiednia
-                        return None, None, True
-                    if not all(weight >= 0 for weight in weights):  # Sprawdzamy, czy wagi są nieujemne
-                        return None, None, True
-                    graph.append(weights)
-                except ValueError:
-                    return None, None, True
-
-        start_vertex = lines[-1].strip()
-        if not start_vertex.isdigit():
-            return None, None, True
-
-        start_vertex = int(start_vertex)
-        if start_vertex < 1 or start_vertex > len(graph):
-            return None, None, True
-
-        return graph, start_vertex - 1, False  # Zwracamy macierz sąsiedztwa, indeks startowy (0-based) i brak błędu
-    except Exception:
-        return None, None, True
-
-
 class MinHeap:
     def __init__(self, capacity):
         self.storage = [None] * capacity  # wszystkie jako None dla lepszej czytelności
@@ -155,89 +114,23 @@ class MinHeap:
         print("Kopiec po wstawieniu elementów:", self.storage[:self.size])
 
 
-
-def dijkstra(graph, start):
-    # Determine the number of vertices in the graph
-    num_vertex = len(graph)
-    
-    # Initialize previous, visited, and distances dictionaries
-    previous = {v: None for v in range(num_vertex)}
-    visited = {v: False for v in range(num_vertex)}
-    distances = {v: float("inf") for v in range(num_vertex)}
-    distances[start] = 0
-
-    # Initialize MinHeap with a capacity of the number of vertices
-    min_heap = MinHeap(num_vertex)
-
-    # Insert the start vertex with a distance of 0 into the heap
-    min_heap.insertHeap((distances[start], start))
-            
-    while min_heap.size > 0:
-        removed_distance, removed_vertex = min_heap.removeFromHeap()
-        visited[removed_vertex] = True
-
-        
-        # Explore all neighbors of the current vertex
-        for neighbor in range(num_vertex):
-            # print(f"neighbor {neighbor}")
-            weight = graph[removed_vertex][neighbor]
-            # print(f"waga {weight}")
-        
-
-            
-            # If the vertex has been visited, skip it
-            if visited[neighbor]:
-                continue
-            if weight > 0:  
-                # print(f"obecny dystans {distances[neighbor]}")
-                new_distance = removed_distance + weight
-                # print(f"nowy dystans {new_distance}")
-                if new_distance < distances[neighbor]:
-                    distances[neighbor] = new_distance
-                    previous[neighbor] = removed_vertex
-                    # print(f"parent nieghbora po aktualizacji {previous[neighbor]}")
-                    # print(f"parent lista po aktualizacji {previous}")
-
-                    current_distance = distances[neighbor]
-                    # print(f"dystans po aktualizacji {current_distance}")
-
-                    # print(f"wstawiany neighbor do kopca {neighbor}")
-
-                    tupla_wst=(current_distance,neighbor)
-                    # print(f"wstawiana tupla {tupla_wst}")
-                
-                    # Add the neighbor to the heap with the updated distance
-                    min_heap.insertHeap(tupla_wst)
-                    # min_heap.printHeap()
-
-   
-    return distances
-
-
-
-
 if __name__ == "__main__":
-    # Wprowadź dane grafu z wejścia
-    # print("Wprowadź dane grafu:")
-    graph, start_vertex, error = read_graph_and_vertex()
+    # Tworzymy kopiec - max 10 elementów
+    min_heap = MinHeap(10)
 
-    if error:
-        # print("Błąd przy wczytywaniu grafu.")
-        print("BŁĄD")
-    else:
-        # print("Macierz sąsiedztwa:")
-        # for row in graph:
-        #     print(row)
-        
-        # print(f"Wierzchołek startowy: {start_vertex}")  # Wypisujemy numer wierzchołka startowego (1-based)
-        # print(f"Wierzchołek startowy +1: {start_vertex + 1}")  # Wypisujemy numer wierzchołka startowego (1-based)
+    # Wstawiamy elementy do kopca jako tuplę (priority, value)
+    min_heap.insertHeap((10, "Task A"))
+    min_heap.insertHeap((5, "Task B"))
+    min_heap.insertHeap((3, "Task C"))
+    min_heap.insertHeap((2, "Task D"))
+    min_heap.insertHeap((8, "Task E"))
 
+    # Print the current state of the heap
+    min_heap.printHeap()
 
-        distances = dijkstra(graph, start_vertex)
+    # Usuwamy elementy z kopca i wyświetlamy
+    print("Usunięty element:", min_heap.removeFromHeap())
+    min_heap.printHeap()
 
-        # print("Shortest distances from start vertex:")
-        for vertex, distance in distances.items():
-            print(f"{vertex + 1} = {distance}")
-
-        
-
+    print("Usunięty element:", min_heap.removeFromHeap())
+    min_heap.printHeap()

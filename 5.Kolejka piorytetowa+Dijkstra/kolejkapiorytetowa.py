@@ -114,10 +114,15 @@ class MinHeap:
                 self.swap(index,smallerChildIndex)
             # przywracanie własności ma iść do końca jeżeli potrzeba, więc ustawiam smallerChildIndex jako index do kolejnego sprawdzenia
             index = smallerChildIndex
+    
+    def printHeap(self):
+        """Print the current state of the heap."""
+        print("Kopiec po wstawieniu elementów:", self.storage[:self.size])
 
 if __name__ == "__main__":
     # Tworzymy kopiec - max 10 eleme
     min_heap = MinHeap(10)
+
 
     # Wstawiamy elementy do kopca
     min_heap.insertHeap(10)
@@ -126,12 +131,15 @@ if __name__ == "__main__":
     min_heap.insertHeap(2)
     min_heap.insertHeap(8)
 
-    print("Kopiec po wstawieniu elementów:", min_heap.storage[:min_heap.size])
+    # Print the current state of the heap
+    min_heap.printHeap()
 
-    # Usuwamy elementy z kopca i wyświetlamy
-    print("Usunięty element:", min_heap.removeFromHeap())
-    print("Kopiec po usunięciu elementu:", min_heap.storage[:min_heap.size])
+    # print("Kopiec po wstawieniu elementów:", min_heap.storage[:min_heap.size])
 
-    print("Usunięty element:", min_heap.removeFromHeap())
-    print("Kopiec po usunięciu elementu:", min_heap.storage[:min_heap.size])
+    # # Usuwamy elementy z kopca i wyświetlamy
+    # print("Usunięty element:", min_heap.removeFromHeap())
+    # print("Kopiec po usunięciu elementu:", min_heap.storage[:min_heap.size])
+
+    # print("Usunięty element:", min_heap.removeFromHeap())
+    # print("Kopiec po usunięciu elementu:", min_heap.storage[:min_heap.size])
     
