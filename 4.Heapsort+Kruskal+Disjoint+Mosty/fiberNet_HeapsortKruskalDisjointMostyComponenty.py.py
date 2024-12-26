@@ -17,9 +17,9 @@ def compare_edges(edge1, edge2):
 
 def compare_numbers(num1, num2):
     if isinstance(num1, list) and isinstance(num2, list):
-        # Porównanie długości komponentów (list)
-        return len(num1) - len(num2)
-    return num1 - num2  # Normalne porównanie liczb
+        return num1[0] - num2[0]  
+    return num1 - num2 
+
 
 
 # Funkcja max_heapify dla iteracyjnego przywracania własności kopca
@@ -309,6 +309,9 @@ if __name__ == '__main__':
         # Wyszukiwanie mostów
         bridges = findBridges(edges)
 
+        # Sortowanie mostów
+        heapSort(bridges, compare_numbers)
+
         # Wyświetlanie mostów
         print('\nMOSTY:')
         if len(bridges) == 0:
@@ -327,11 +330,11 @@ if __name__ == '__main__':
         edges_without_bridges = removeBridges(edges, bridges, nodes)
 
         components = findComponents(edges_without_bridges)
-        # print(f"Komponenty przed sortowaniem: {components}")
+        #print(f"Komponenty przed sortowaniem: {components}")
 
         heapSort(components, compare_numbers)
 
-        # print(f"Komponenty po sortowaniu: {components}")
+        #print(f"Komponenty po sortowaniu: {components}")
 
         # Wyświetlanie komponentów
         print('\nKOMPONENTY:')
