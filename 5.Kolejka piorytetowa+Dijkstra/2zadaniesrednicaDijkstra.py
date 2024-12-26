@@ -1,42 +1,36 @@
 import sys
+import math
 
-# Funkcja wczytująca dane z wejścia
-def read_graph_and_vertex():
-    """Funkcja wczytująca graf jako macierz sąsiedztwa z wagami oraz wierzchołek startowy."""
+def read_graph():
+    """Funkcja wczytująca graf jako macierz sąsiedztwa z wagami."""
     try:
         input_data = sys.stdin.read().strip()
         if not input_data:
-            return None, None, True
+            return None, True
 
         lines = input_data.split('\n')
-        if len(lines) < 2:
-            return None, None, True
+        if len(lines) < 1:
+            return None, True
 
         graph = []
-        # Wczytujemy macierz sąsiedztwa (wagi krawędzi)
-        for line in lines[:-1]:
+        for line in lines:
             if line.strip():
                 try:
                     weights = list(map(int, line.split()))
-                    if len(weights) != len(lines) - 1:  # Sprawdzamy, czy liczba kolumn jest odpowiednia
-                        return None, None, True
                     if not all(weight >= 0 for weight in weights):  # Sprawdzamy, czy wagi są nieujemne
-                        return None, None, True
+                        return None, True
                     graph.append(weights)
                 except ValueError:
-                    return None, None, True
+                    return None, True
 
-        start_vertex = lines[-1].strip()
-        if not start_vertex.isdigit():
-            return None, None, True
+        n = len(graph)
+        for row in graph:
+            if len(row) != n:  # Sprawdzamy, czy macierz jest kwadratowa
+                return None, True
 
-        start_vertex = int(start_vertex)
-        if start_vertex < 1 or start_vertex > len(graph):
-            return None, None, True
-
-        return graph, start_vertex - 1, False  # Zwracamy macierz sąsiedztwa, indeks startowy (0-based) i brak błędu
+        return graph, False
     except Exception:
-        return None, None, True
+        return None, True
 
 
 class MinHeap:
@@ -84,7 +78,9 @@ class MinHeap:
         return self.size == self.capacity
 
     def swap(self, index1, index2):
-        self.storage[index1], self.storage[index2] = self.storage[index2], self.storage[index1]
+        temp = self.storage[index1]
+        self.storage[index1] = self.storage[index2]
+        self.storage[index2] = temp
 
     # ------------------------------------------------------ iteracyjnie wkładania do stosu
     # wkładanie do stosu 
@@ -214,28 +210,49 @@ def dijkstra(graph, start):
 
 
 
+
+def graph_diameter_with_dijkstra(graph):
+    """
+    Oblicza średnicę grafu wykorzystując algorytm Dijkstry.
+    :param graph: Macierz sąsiedztwa z wagami.
+    :return: Średnica grafu.
+    """
+    num_vertices = len(graph)
+    max_distances = []
+
+    for start_vertex in range(num_vertices):
+        distances = dijkstra(graph, start_vertex)
+        # Maksymalna odległość z danego wierzchołka
+        max_distance = max(distances.values())
+        max_distances.append(max_distance)
+
+    # Średnica grafu to największa odległość
+    return max(max_distances)
+
+
+
+
 if __name__ == "__main__":
-    # Wprowadź dane grafu z wejścia
     # print("Wprowadź dane grafu:")
-    graph, start_vertex, error = read_graph_and_vertex()
+    graph, error = read_graph()
 
     if error:
-        # print("Błąd przy wczytywaniu grafu.")
         print("BŁĄD")
     else:
+
         # print("Macierz sąsiedztwa:")
         # for row in graph:
         #     print(row)
         
-        # print(f"Wierzchołek startowy: {start_vertex}")  # Wypisujemy numer wierzchołka startowego (1-based)
-        # print(f"Wierzchołek startowy +1: {start_vertex + 1}")  # Wypisujemy numer wierzchołka startowego (1-based)
-
-
-        distances = dijkstra(graph, start_vertex)
+        # start_vertex=0
+        # distances = dijkstra(graph, start_vertex)
 
         # print("Shortest distances from start vertex:")
-        for vertex, distance in distances.items():
-            print(f"{vertex + 1} = {distance}")
+        # for vertex, distance in distances.items():
+        #     print(f"{vertex + 1} = {distance}")
 
         
-
+        # Obliczenie średnicy grafu
+        diameter = graph_diameter_with_dijkstra(graph)
+        # print("Średnica grafu:", diameter)
+        print( diameter)
