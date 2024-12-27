@@ -1,4 +1,31 @@
 import sys
+def create_adjacency_list_no_weights(edges):
+    """
+    Tworzy listę sąsiedztwa dla grafu skierowanego bez uwzględniania wag.
+
+    :param edges: Lista słowników reprezentujących krawędzie z wagami.
+                  Każdy słownik zawiera 'a' (początek), 'b' (koniec) i 'w' (waga).
+    :return: Słownik reprezentujący listę sąsiedztwa (tylko sąsiedzi, bez wag).
+    """
+    adjacency_list = {}
+    
+    for edge in edges:
+        start = edge['a']
+        end = edge['b']
+        
+        # Dodajemy wierzchołek początkowy, jeśli jeszcze nie istnieje
+        if start not in adjacency_list:
+            adjacency_list[start] = []
+        
+        # Dodajemy sąsiada
+        adjacency_list[start].append(end)
+        
+        # Upewniamy się, że wierzchołek końcowy istnieje w grafie
+        if end not in adjacency_list:
+            adjacency_list[end] = []
+    
+    return adjacency_list
+
 
 
 
@@ -140,7 +167,7 @@ def dfs(edges, start, visited, component=None, excluded_edge=None):
             visited[node] = True
             if component is not None:
                 component.append(node)  # Dodajemy wierzchołek do komponentu
-            # print(f"Odvisytowano wierzchołek: {node}")  # Debugowanie
+            print(f"Odczytano wierzchołek: {node}")  # Debugowanie
 
             # Znajdź sąsiadów wierzchołka, z pominięciem excluded_edge
             neighbors = []
@@ -149,6 +176,8 @@ def dfs(edges, start, visited, component=None, excluded_edge=None):
                     neighbors.append(edge['b'])
                 elif edge['b'] == node and (excluded_edge is None or (node, edge['a']) != excluded_edge):
                     neighbors.append(edge['a'])
+           
+            print(f"Sąsiedzi {node}: {neighbors}")  # Debugowanie
 
             # Dodaj sąsiadów do stosu
             for neighbor in neighbors:
@@ -176,7 +205,7 @@ def findBridges(edges):
     for edge in edges:
         v, u = edge['a'], edge['b']
 
-        # Tworzymy odwiedzone wierzchołki
+        # Lista odwiedzonych wierzcholkow
         visited = {node: False for node in nodes}
 
         # Wykonaj DFS z wykluczeniem tej krawędzi
@@ -267,8 +296,8 @@ if __name__ == '__main__':
         if n < 2 or n > 100 or m < n - 1 or m > (n * (n - 1)) // 2:
             raise ValueError('BŁĄD')
         
-        # print(f"Liczba  nodów: {n}")
-        # print(f"Liczba  możliwych połączeń: {m}")
+        print(f"Liczba  nodów: {n}")
+        print(f"Liczba  możliwych połączeń: {m}")
 
         # Odczytanie krawędzi
         edges = []
@@ -288,12 +317,21 @@ if __name__ == '__main__':
             edges.append({'a': a, 'b': b, 'w': w})
 
 
-        # print(f"Krawędzie z wagami {edges}")
+        print(f"Krawędzie z wagami {edges}")
+
+        adj_list = create_adjacency_list_no_weights(edges)
+
+        print("{")
+        for i, (node, neighbors) in enumerate(adj_list.items()):
+            neighbors_str = ", ".join(map(str, neighbors))
+            comma = "," if i < len(adj_list) - 1 else ""
+            print(f"    {node}: [{neighbors_str}]{comma}")
+        print("}")
 
         # Sortowanie krawędzi na podstawie wagi
         heapSort(edges, compare_edges)
 
-        # print(f"posortowane krawędzie {edges}")
+        print(f"posortowane krawędzie {edges}")
 
         minSpinalTree, total_weight = kruskal(edges, n)
 
