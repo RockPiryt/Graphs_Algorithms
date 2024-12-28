@@ -44,6 +44,8 @@ class MinHeap:
         self.capacity = capacity
         self.size = 0
 
+
+
     def getParentIndex(self, index):
         return (index - 1) // 2
 
@@ -65,9 +67,14 @@ class MinHeap:
     def swap(self, index1, index2):
         self.storage[index1], self.storage[index2] = self.storage[index2], self.storage[index1]
 
+    def resize(self):
+        """Podwaja pojemność kopca."""
+        self.capacity *= 2
+        self.storage.extend([None] * (self.capacity - len(self.storage)))
+
     def insertHeap(self, element):
         if self.size == self.capacity:
-            raise Exception("Kopiec pełny")
+            self.resize()  # Zwiększenie rozmiaru kopca
         self.storage[self.size] = element
         self.size += 1
         self.heapifyUp()

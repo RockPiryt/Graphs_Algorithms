@@ -1,6 +1,6 @@
 import sys
-import math
 
+# Funkcja wczytująca dane z wejścia
 def read_graph():
     """Funkcja wczytująca graf jako macierz sąsiedztwa z wagami."""
     try:
@@ -32,14 +32,14 @@ def read_graph():
     except Exception:
         return None, True
 
-
 class MinHeap:
     def __init__(self, capacity):
-        self.storage = [None] * capacity  # wszystkie jako None dla lepszej czytelności
-        self.capacity = capacity  # wielkość kopca
-        self.size = 0  # początkowa wielkość kopca
+        self.storage = [None] * capacity
+        self.capacity = capacity
+        self.size = 0
 
-    #-------------------------------------------------------- pobieranie indexów rodzica i dzieci
+
+
     def getParentIndex(self, index):
         return (index - 1) // 2
 
@@ -49,107 +49,63 @@ class MinHeap:
     def getRightChildIndex(self, index):
         return 2 * index + 2
 
-    #------------------------------------------------------- sprawdzenie posiadania rodzica/dzieci
     def hasParent(self, index):
-        # index rodzica musi być większy lub równy 0 (może być root)
         return self.getParentIndex(index) >= 0
 
     def hasLeftChild(self, index):
-        # index dziecka musi być mniejszy od aktualnej wielkości kopca
         return self.getLeftChildIndex(index) < self.size
 
     def hasRightChild(self, index):
-        # index dziecka musi być mniejszy od aktualnej wielkości kopca
         return self.getRightChildIndex(index) < self.size
 
-    #-------------------------------------------------------- zwracanie wartości na konkretnym indexie rodzica, left i right
-    def parent(self, index):
-        # wyciągam z listy storage aktualną wartość na wybranym indexie
-        return self.storage[self.getParentIndex(index)]
-
-    def leftChild(self, index):
-        return self.storage[self.getLeftChildIndex(index)]
-
-    def rightChild(self, index):
-        return self.storage[self.getRightChildIndex(index)]
-
-    # ------------------------------------------------------- pomocnicze funkcje
-    def isFull(self):
-        return self.size == self.capacity
-
     def swap(self, index1, index2):
-        temp = self.storage[index1]
-        self.storage[index1] = self.storage[index2]
-        self.storage[index2] = temp
+        self.storage[index1], self.storage[index2] = self.storage[index2], self.storage[index1]
 
-    # ------------------------------------------------------ iteracyjnie wkładania do stosu
-    # wkładanie do stosu 
+    def resize(self):
+        """Podwaja pojemność kopca."""
+        self.capacity *= 2
+        self.storage.extend([None] * (self.capacity - len(self.storage)))
+
     def insertHeap(self, element):
-        if self.isFull():
-            raise Exception("Kopiec pełny")
-        # wstawienie elementu na ostatnim miejscu kopca
+        if self.size == self.capacity:
+            self.resize()  # Zwiększenie rozmiaru kopca
         self.storage[self.size] = element
         self.size += 1
-        # przywrócenie własności kopca min
         self.heapifyUp()
 
-    # przywracanie własności kopca min idąc w górę (rodzic ma być mniejszy lub równy dzieciom)
     def heapifyUp(self):
-        # index wstawianego ostatnio elementu
         index = self.size - 1
-        # jeżeli obecny węzeł ma rodzica i rodzic jest większy od tego noda to zrób swap
-        while (self.hasParent(index) and self.parent(index)[0] > self.storage[index][0]):
-            self.swap(self.getParentIndex(index), index)
-            # kontynuacja w górę swapowania jeżeli potrzeba
-            index = self.getParentIndex(index)
+        while self.hasParent(index):
+            parent_index = self.getParentIndex(index)
+            if self.storage[parent_index][0] <= self.storage[index][0]:
+                break
+            self.swap(parent_index, index)
+            index = parent_index
 
-    # ------------------------------------------------------ iteracyjnie usuwanie ze stosu
-    # usuwanie ze stosu 
     def removeFromHeap(self):
-        # gdy kopiec pusty
         if self.size == 0:
             raise Exception("Kopiec pusty")
-        
-        # kopiec zawiera elementy
-        # usuwany będzie root zawsze (bo to najmniejszy element w kopcu min)
-        removedElement = self.storage[0]
-        # ustanowienie nowego root, nowym root staje się ostatni element w kopcu
+        removed_element = self.storage[0]
         self.storage[0] = self.storage[self.size - 1]
         self.size -= 1
-        # przywracam własność kopca w dół
         self.heapifyDown()
-
-        # zwrot co zostało usunięte
-        return removedElement
+        return removed_element
 
     def heapifyDown(self):
-        # zaczynam od root bo z tamtąd był usuwany element
         index = 0
-        # muszę sprawdzić które dziecko lewe czy prawe ma mniejszą wartość i wtedy zamienić z mniejszym dzieckiem 
-        # musi mieć dziecko jak ma być przywracana własność (jak ma prawe to ma też lewe (musi być kompletnym drzewem binarnym), dlatego sprawdzam tylko czy ma lewe)
-        while (self.hasLeftChild(index)):
-            # pobieram wartość lewego dziecka - na razie zakładam że lewe jest mniejsze
-            smallerChildIndex = self.getLeftChildIndex(index)
-
-            # sprawdzam czy prawe dziecko nie jest mniejsze od lewego
-            if (self.hasRightChild(index) and self.rightChild(index)[0] < self.leftChild(index)[0]):
-                smallerChildIndex = self.getRightChildIndex(index)
-            
-            # jeśli root mniejszy od dzieci to ok
-            if (self.storage[index][0] < self.storage[smallerChildIndex][0]):
+        while self.hasLeftChild(index):
+            smaller_child_index = self.getLeftChildIndex(index)
+            if self.hasRightChild(index) and self.storage[self.getRightChildIndex(index)][0] < self.storage[smaller_child_index][0]:
+                smaller_child_index = self.getRightChildIndex(index)
+            if self.storage[index][0] <= self.storage[smaller_child_index][0]:
                 break
-            else:
-                # jeśli jest rodzic większy od dzieci to zamień miejscami
-                self.swap(index, smallerChildIndex)
-            # przywracanie własności ma iść do końca jeżeli potrzeba, więc ustawiam smallerChildIndex jako index do kolejnego sprawdzenia
-            index = smallerChildIndex
+            self.swap(index, smaller_child_index)
+            index = smaller_child_index
 
     def printHeap(self):
-        """Print the current state of the heap."""
-        print("Kopiec po wstawieniu elementów:", self.storage[:self.size])
+        print("Kopiec:", self.storage[:self.size])
 
-
-
+#-------------------------------------------------------------Dijkstra
 def dijkstra(graph, start):
     # Determine the number of vertices in the graph
     num_vertex = len(graph)
@@ -207,16 +163,9 @@ def dijkstra(graph, start):
    
     return distances
 
-
-
-
-
+#Oblicza średnicę grafu wykorzystując algorytm Dijkstry.
 def graph_diameter_with_dijkstra(graph):
-    """
-    Oblicza średnicę grafu wykorzystując algorytm Dijkstry.
-    :param graph: Macierz sąsiedztwa z wagami.
-    :return: Średnica grafu.
-    """
+
     num_vertices = len(graph)
     max_distances = []
 
@@ -229,34 +178,55 @@ def graph_diameter_with_dijkstra(graph):
     # Średnica grafu to największa odległość
     return max(max_distances)
 
+#Znajduje peryferium grafu, czyli wierzchołki, dla których maksymalna odległość do innego wierzchołka równa się średnicy grafu.
+def find_periphery(graph):
+    num_vertices = len(graph)
+    diameter = graph_diameter_with_dijkstra(graph)
+    periphery = []
 
+    for start_vertex in range(num_vertices):
+        distances = dijkstra(graph, start_vertex)
+        max_distance = max(distances.values())
+
+        # Jeśli maksymalna odległość równa średnicy, dodaj wierzchołek do peryferium
+        if max_distance == diameter:
+            periphery.append(start_vertex + 1)  # Konwersja na 1-based index
+
+    return sorted(periphery)  # Zwróć posortowaną listę
 
 
 if __name__ == "__main__":
+    # Wprowadź dane grafu z wejścia
     # print("Wprowadź dane grafu:")
     graph, error = read_graph()
 
     if error:
+        # print("Błąd przy wczytywaniu grafu.")
         print("BŁĄD")
     else:
-
         # print("Macierz sąsiedztwa:")
         # for row in graph:
         #     print(row)
+        
+        # print(f"Wierzchołek startowy: {start_vertex}")  # Wypisujemy numer wierzchołka startowego (1-based)
+        # print(f"Wierzchołek startowy +1: {start_vertex + 1}")  # Wypisujemy numer wierzchołka startowego (1-based)
 
-        # -----------------Sprawdzenie dijskstra
-        # start_vertex=0
+
         # distances = dijkstra(graph, start_vertex)
 
-        # print("Shortest distances from start vertex:")
+        # # print("Shortest distances from start vertex:")
         # for vertex, distance in distances.items():
-
         #     print(f"{vertex + 1} = {distance}")
 
-        
         # Obliczenie średnicy grafu
         diameter = graph_diameter_with_dijkstra(graph)
         # print("Średnica grafu:", diameter)
-        print( diameter)
+        # print("średnica:")
+        # print( diameter)
+
+        periphery = find_periphery(graph)
+        # print("Peryferium grafu:")
+        print(" ".join(map(str, periphery)))
 
         
+

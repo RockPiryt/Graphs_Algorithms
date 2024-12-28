@@ -44,8 +44,6 @@ def create_adj_list(edges):
 
     return adjacency_list
 
-# --------------------------------------------Sortowanie lity za pomocą heapSort
-
 
 # --------------------------------------------Sortowanie lity za pomocą heapSort
 def compare_edges(edge1, edge2):
@@ -64,8 +62,6 @@ def compare_numbers(num1, num2):
     if isinstance(num1, list) and isinstance(num2, list):
         return num1[0] - num2[0]  
     return num1 - num2 
-
-
 
 # Funkcja max_heapify dla iteracyjnego przywracania własności kopca
 def max_heapify_iter(Array, n, i, compare):
@@ -109,7 +105,6 @@ def heapSort(Array, compare):
 
         # Przywracanie własności kopca dla zmniejszonej tablicy
         max_heapify_iter(Array, i, 0, compare)
-
 
 # ----------------------------------------DisjointSet
 class DisjointSet:
