@@ -134,6 +134,92 @@ def has_exactly_two_odd_degrees(degree_sequence):
 
     return odd_count == 2
 
+# ----------------------------------------------------------------------------------Półeuelrowski (ścieżka Eulera)
+#sprawdzenie czy półeulorwski , czyli ze zawiera ścieżkę eulera
+# -warunek ścieżki- każdy jego wierzchołek za wyjątkiem dwóch musi posiadać parzysty stopień.
+# - warunek zaliczenia wszystkich krawędzi z grafu – zbior unikalnych krawędzi bez powtórek
+# - graf musi być spojny – tylko 1 komponent spojnosci sprawdzany dfs
+
+
+#Sprawdza czy jest ścieżka w grafie spójnym, który ma 2 wierzchołki nieparzyste a reszte parzyste
+def is_semi_eulerian(adjacency_list):
+    # Sprawdzenie unikalności krawędzi podczas DFS
+    for vertex in adjacency_list:
+        visited_edges, euler_path = dfs_iter_with_edges_and_path(adjacency_list, vertex)
+        all_edges = set(tuple(sorted((u, v))) for u in adjacency_list for v in adjacency_list[u])
+        if visited_edges == all_edges:
+            print(f"Znaleziono unikalną ścieżkę zawierającą wszystkie krawędzie, zaczynając od wierzchołka {vertex}.")
+            return True, euler_path
+
+    print("Nie znaleziono unikalnej ścieżki zawierającej wszystkie krawędzie.")
+    return False, None
+
+
+# ------------------------------------------------------------------------------Eulerowski(cykl Eulera)
+# - czy jest spojny oraz 
+# -Wszystkie wierzchołki muszą mieć parzysty stopień
+
+# Sprawdza czy jest cykl Eulera w grafie spójnym, którego wszystkie wierzchołki mają stopień parzysty
+def is_eulerian(adjacency_list):
+    cycle = fleury_algorithm(adjacency_list)
+
+    if cycle:
+        return True, cycle
+    else:
+        return False, None
+
+#Lista wierzchołków w kolejności cyklu Eulera lub komunikat o braku cyklu
+def fleury_algorithm(adjacency_list):
+    
+    # Skopiuj graf, aby nie modyfikować oryginalnego
+    graph_copy = {u: neighbors[:] for u, neighbors in adjacency_list.items()}
+    
+    # Zacznij od dowolnego wierzchołka
+    start = next(iter(graph_copy))
+    path = [start]
+    current = start
+    
+    while any(graph_copy.values()):
+        # Wybierz krawędź do przejścia
+        for neighbor in graph_copy[current]:
+            if len(graph_copy[current]) == 1 or not is_bridge(graph_copy, current, neighbor):
+                # Usuń krawędź z grafu
+                graph_copy[current].remove(neighbor)
+                graph_copy[neighbor].remove(current)
+                path.append(neighbor)
+                current = neighbor
+                break
+        else:
+            return "Nie znaleziono cyklu Eulera."
+
+    return path
+
+# wykorzystanie w algorytmie fleurego 
+def is_bridge(graph, u, v):
+    """
+    Sprawdza, czy krawędź (u, v) jest mostem.
+    :param graph: Lista sąsiedztwa grafu.
+    :param u: Początkowy wierzchołek krawędzi.
+    :param v: Końcowy wierzchołek krawędzi.
+    :return: True, jeśli krawędź (u, v) jest mostem; False w przeciwnym razie.
+    """
+    # Liczba komponentów przed usunięciem krawędzi
+    initial_components = len(find_components(graph))
+    
+    # Usuń krawędź (u, v)
+    graph[u].remove(v)
+    graph[v].remove(u)
+    
+    # Liczba komponentów po usunięciu krawędzi
+    new_components = len(find_components(graph))
+    
+    # Przywróć krawędź (u, v)
+    graph[u].append(v)
+    graph[v].append(u)
+    
+    # Krawędź jest mostem, jeśli graf stał się bardziej rozspójny
+    return new_components > initial_components
+
 # -------------------------------------------------------------szukanie mostów w komponentach
 #Funkcja znajdująca mosty w grafie przez usuwanie krawędzi
 def find_bridges(graph):
@@ -184,87 +270,6 @@ def remove_bridges_from_components(component_adj_lists):
         updated_components.extend(new_components)
 
     return updated_components
-# ----------------------------------------------------------------------------------Półeuelrowski (ścieżka Eulera)
-#sprawdzenie czy półeulorwski , czyli ze zawiera ścieżkę eulera
-# -warunek ścieżki- każdy jego wierzchołek za wyjątkiem dwóch musi posiadać parzysty stopień.
-# - warunek zaliczenia wszystkich krawędzi z grafu – zbior unikalnych krawędzi bez powtórek
-# - graf musi być spojny – tylko 1 komponent spojnosci sprawdzany dfs
-
-
-#Sprawdza czy jest ścieżka w grafie spójnym, który ma 2 wierzchołki nieparzyste a reszte parzyste
-def is_semi_eulerian(adjacency_list):
-    # Sprawdzenie unikalności krawędzi podczas DFS
-    for vertex in adjacency_list:
-        visited_edges, euler_path = dfs_iter_with_edges_and_path(adjacency_list, vertex)
-        all_edges = set(tuple(sorted((u, v))) for u in adjacency_list for v in adjacency_list[u])
-        if visited_edges == all_edges:
-            print(f"Znaleziono unikalną ścieżkę zawierającą wszystkie krawędzie, zaczynając od wierzchołka {vertex}.")
-            return True, euler_path
-
-    print("Nie znaleziono unikalnej ścieżki zawierającej wszystkie krawędzie.")
-    return False, None
-
-
-# ------------------------------------------------------------------------------Eulerowski(cykl Eulera)
-# - czy jest spojny oraz 
-# -Wszystkie wierzchołki muszą mieć parzysty stopień
-
-# Sprawdza czy jest cykl Eulera w grafie spójnym, którego wszystkie wierzchołki mają stopień parzysty
-def is_eulerian(adjacency_list):
-    cycle = fleury_algorithm(adjacency_list)
-    return cycle
-
-#Lista wierzchołków w kolejności cyklu Eulera lub komunikat o braku cyklu
-def fleury_algorithm(adjacency_list):
-    
-    # Skopiuj graf, aby nie modyfikować oryginalnego
-    graph_copy = {u: neighbors[:] for u, neighbors in adjacency_list.items()}
-    
-    # Zacznij od dowolnego wierzchołka
-    start = next(iter(graph_copy))
-    path = [start]
-    current = start
-    
-    while any(graph_copy.values()):
-        # Wybierz krawędź do przejścia
-        for neighbor in graph_copy[current]:
-            if len(graph_copy[current]) == 1 or not is_bridge(graph_copy, current, neighbor):
-                # Usuń krawędź z grafu
-                graph_copy[current].remove(neighbor)
-                graph_copy[neighbor].remove(current)
-                path.append(neighbor)
-                current = neighbor
-                break
-        else:
-            return "Nie znaleziono cyklu Eulera."
-
-    return path
-
-def is_bridge(graph, u, v):
-    """
-    Sprawdza, czy krawędź (u, v) jest mostem.
-    :param graph: Lista sąsiedztwa grafu.
-    :param u: Początkowy wierzchołek krawędzi.
-    :param v: Końcowy wierzchołek krawędzi.
-    :return: True, jeśli krawędź (u, v) jest mostem; False w przeciwnym razie.
-    """
-    # Liczba komponentów przed usunięciem krawędzi
-    initial_components = len(find_components(graph))
-    
-    # Usuń krawędź (u, v)
-    graph[u].remove(v)
-    graph[v].remove(u)
-    
-    # Liczba komponentów po usunięciu krawędzi
-    new_components = len(find_components(graph))
-    
-    # Przywróć krawędź (u, v)
-    graph[u].append(v)
-    graph[v].append(u)
-    
-    # Krawędź jest mostem, jeśli graf stał się bardziej rozspójny
-    return new_components > initial_components
-
 
 if __name__ == "__main__":
 
@@ -273,69 +278,50 @@ if __name__ == "__main__":
 
         # Konwertuj na listę sąsiedztwa
         adjacency_list = adjacency_matrix_to_list(adjacency_matrix)
-
-        # Wyświetl listę sąsiedztwa
         print(f"Lista sąsiedztwa: {adjacency_list} \n")
-        # for vertex, neighbors in adjacency_list.items():
-        #     print(f"{vertex}: {neighbors}")
         
         #-----------------------------------------------------Sprawdzenie spójności grafu
-        print("SPÓJNOŚĆ")
         # Znajdowanie komponentów w oryginalnym grafie 
         komponenty = find_components(adjacency_list)
         num_components_original_graph = len(komponenty)
         print("liczba kompoentów w oryinalnym grafie :", num_components_original_graph)
 
-        if num_components_original_graph > 1:
-            print("Graf jest niespójny\n")
-        else:
-            print("Graf jest spójny\n")
-
-        #----------------------------------------------------Sprawdzenie ciągu stopni w grafie
-        print("STOPNIE")
-        degree_sequence = calculate_degree_sequence(adjacency_list)
-        print(F"Ciąg stopni wierzchołków: {degree_sequence}")
 
 
-        if all_vertices_even(degree_sequence):
-            print("Wszystkie wierzchołki parzyste, sprawdzam czy jest cykl Eulera.\n")
-            # is_eulerian()
-            pass
-        else:
-            if has_exactly_two_odd_degrees(degree_sequence):
-                print(f"Dwa  wierzchołki nieparzyste, reszta stopnia parzystego, sprawdzam czy jest ścieżka Eulera.\n")
-                #is_semi_eulerian(adjacency_list)
-                result, euler_path = is_semi_eulerian(adjacency_list)
-                print("Czy graf jest pół-Eulerowski?", result)
+        if num_components_original_graph == 1:
+            print("Graf spójny, więc sprawdzam stopnie wierzchołków.")
+            degree_sequence = calculate_degree_sequence(adjacency_list)
+            print(F"Ciąg stopni wierzchołków: {degree_sequence}")
 
-                if euler_path:
-                     print("Ścieżka Eulera:", euler_path)
+            if all_vertices_even(degree_sequence):
+                print("Wszystkie wierzchołki parzyste, sprawdzam czy jest cykl Eulera.\n")
+                result, euler_cycle = is_eulerian(adjacency_list)
+                print("Czy graf jest Eulerowski?", result)
+                if euler_cycle:
+                    print("\nEFEKT: Graf Eulerowski?")
+                    print("Cykl Eulera:", euler_cycle)
             else:
-                print("Graf Nieeulerowski")
-
-
-
-        #------------------------------------------------------Ogólne sprawdzenie
-        # #sprawdzenie spojnosci grafu
-        # if num_components_original_graph > 1:
-        #     print("Graf jest niespójny")
-        # else:
-        #     #sprawdzenie czy nieuelerowski (jest spojny i jest sciezka ale powtarzalne krawedzie)
-        #     if num_components_original_graph == 1:
-        #         print("Graf jest spójny")
-        #         print("Sprawdzam czy jest ścieżka eulera w ktorej są unikalne krawedzie")
-        #     else: 
-        #         if is_semi_eulerian(adjacency_list):
-        #             print("Graf jest półeulerowski czyli jest ścieżka z unikalnymi krawędziami")
-
-
-        # Znalezienie i wypisanie mostów
-        bridges = find_bridges(adjacency_list)
-
-        if bridges:
-            print("Mosty :", bridges)
+                if has_exactly_two_odd_degrees(degree_sequence):
+                    print(f"Dwa  wierzchołki nieparzyste, reszta stopnia parzystego, sprawdzam czy jest ścieżka Eulera.\n")
+                    result, euler_path = is_semi_eulerian(adjacency_list)
+                    print("Czy graf jest pół-Eulerowski?", result)
+                    if euler_path:
+                        print("\nEFEKT: Graf pół-Eulerowski?")
+                        print("Ścieżka Eulera:", euler_path)
+                else:
+                    print("\nEFEKT:Graf Nieeulerowski, bo brak ścieżki Eulera")
         else:
-            print("BRAK MOSTÓW")
+            print("\nEFEKT:Graf jest niespójny, wiele komponentów spójności\n")
+
+
+
+        # # Znalezienie i wypisanie mostów
+        # bridges = find_bridges(adjacency_list)
+
+        # if bridges:
+        #     print("Mosty :", bridges)
+        # else:
+        #     print("BRAK MOSTÓW")
 
 
     
