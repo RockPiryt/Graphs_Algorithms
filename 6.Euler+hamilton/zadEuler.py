@@ -1,6 +1,4 @@
-
 import sys
-
 # #-----------------------------------------------------------------------------------wczytanie danych
 def input_adjacency_matrix():
 
@@ -20,7 +18,6 @@ def input_adjacency_matrix():
     
     return adjacency_matrix
 
-
 def adjacency_matrix_to_list(adjacency_matrix):
     adjacency_list = {}
 
@@ -31,7 +28,6 @@ def adjacency_matrix_to_list(adjacency_matrix):
                 adjacency_list[i + 1].append(j + 1)  # Dodaj sąsiadów (też 1-indeksowane)
 
     return adjacency_list
-
 # #-----------------------------------------------------------------------------------Znajdowanie  komponentów za pomocą dfs
 #Iteracyjny DFS, który odwiedza wierzchołki i zbiera krawędzie oraz ścieżkę Eulera.
 def dfs_iter_with_edges_and_path(adj_list, start):
@@ -54,7 +50,7 @@ def dfs_iter_with_edges_and_path(adj_list, start):
 
     return visited_edges, euler_path
 
-# dfs - order wierzcholków-dla szukania mostów
+# dfs - order wierzcholków-dla szukania mostów i komponentów
 def dfs_iter(adj_list, start):
     visited = {node: False for node in adj_list}
     stack = [start]
@@ -80,7 +76,7 @@ def find_components(adj_list):
     for node in adj_list:
         if not visited[node]:
             order, _ = dfs_iter(adj_list, node)
-            components.append(sorted(order))  # Sortowanie wierzchołków w komponencie
+            components.append(sorted(order))  
             for v in order:
                 visited[v] = True
 
@@ -88,12 +84,6 @@ def find_components(adj_list):
 
 #tworzy listę sasiedztwa dla komponentów spójności
 def create_component_adj_lists(adj_list):
-    '''
-    Tworzy listę sąsiedztwa dla każdego komponentu spójności i sortuje wierzchołki oraz ich sąsiadów.
-
-    :param adj_list: Słownik reprezentujący listę sąsiedztwa grafu.
-    :return: Lista posortowanych list sąsiedztwa dla każdego komponentu.
-    '''
     components = find_components(adj_list)
 
     # Jeśli jest tylko jeden komponent, zwróć posortowaną listę sąsiedztwa
@@ -144,9 +134,7 @@ def has_exactly_two_odd_degrees(degree_sequence):
 
     return odd_count == 2
 
-
 # -------------------------------------------------------------szukanie mostów w komponentach
-
 #Funkcja znajdująca mosty w grafie przez usuwanie krawędzi
 def find_bridges(graph):
     bridges = []
@@ -196,93 +184,7 @@ def remove_bridges_from_components(component_adj_lists):
         updated_components.extend(new_components)
 
     return updated_components
-
-
-# ----------------------------------------------------------------------------------cyklicznosc grafu
-def vertex_count(self):
-        """Zwraca liczbę wierzchołków w grafie."""
-        return len(self.adjacency_list)
-    
-def count_edges(self):
-    """Zlicza liczbę krawędzi w grafie."""
-    edge_count = 0  
-
-    for neighbors in self.adjacency_list:
-        edge_count += len(neighbors) - 1  # Odejmujemy 1, aby pominąć numer wierzchołka
-    
-    return edge_count // 2 
-
-
-
-
-
-
-
-def find_components(graph):
-    """
-    Znajduje komponenty spójności grafu.
-    :param graph: Lista sąsiedztwa jako słownik.
-    :return: Lista komponentów spójności (każdy komponent to lista wierzchołków).
-    """
-    visited = set()
-    components = []
-
-    def dfs(node, component):
-        visited.add(node)
-        component.append(node)
-        for neighbor in graph.get(node, []):
-            if neighbor not in visited:
-                dfs(neighbor, component)
-
-    for node in graph.keys():
-        if node not in visited:
-            component = []
-            dfs(node, component)
-            components.append(component)
-
-    return components
-
-#sprawdzenie czy półeulorwski , czyli ze zawiera ścieżkę eulera
-# -warunek ścieżki- każdy jego wierzchołek za wyjątkiem dwóch musi posiadać parzysty stopień.
-# - warunek zaliczenia wszystkich krawędzi z grafu – zbior unikalnych krawędzi bez powtórek
-# - graf musi być spojny – tylko 1 komponent spojnosci sprawdzany dfs
-def is_semi_eulerian(adjacency_list):
-    print("Funkcja czy półeulerowski (czy zawiera ścieżkę)")
-
-    # Warunek 1: Sprawdź spójność grafu
-    components = find_components(adjacency_list)
-    num_components = len(components)
-    print("Liczba komponentów spójności:", num_components)
-
-    if num_components > 1:
-        print("Graf jest niespójny, więc nie jest pół-Eulerowski.")
-        return False
-
-    # Warunek 2: Sprawdź, czy dokładnie dwa wierzchołki mają stopień nieparzysty
-    odd_degree_vertices = 0
-    for vertex, neighbors in adjacency_list.items():
-        degree = len(neighbors)
-        print(f"stopien dla {vertex} to {degree}")
-        if degree % 2 != 0:
-            odd_degree_vertices += 1
-
-    print("Liczba wierzchołków o nieparzystym stopniu:", odd_degree_vertices)
-    if odd_degree_vertices != 2:
-        print("Graf nie spełnia warunku stopni wierzchołków (dokładnie dwa wierzchołki o nieparzystym stopniu).")
-        return False
-
-    # Warunek 3: Sprawdź unikalność krawędzi podczas DFS
-    for vertex in adjacency_list:
-        visited_edges, euler_path = dfs_iter_with_edges_and_path(adjacency_list, vertex)
-        all_edges = set(tuple(sorted((u, v))) for u in adjacency_list for v in adjacency_list[u])
-        if visited_edges == all_edges:
-            print(f"Znaleziono unikalną ścieżkę zawierającą wszystkie krawędzie, zaczynając od wierzchołka {vertex}.")
-            return True, euler_path
-
-    print("Nie znaleziono unikalnej ścieżki zawierającej wszystkie krawędzie.")
-    return False, None
-
-
+# ----------------------------------------------------------------------------------Półeuelrowski (ścieżka Eulera)
 #sprawdzenie czy półeulorwski , czyli ze zawiera ścieżkę eulera
 # -warunek ścieżki- każdy jego wierzchołek za wyjątkiem dwóch musi posiadać parzysty stopień.
 # - warunek zaliczenia wszystkich krawędzi z grafu – zbior unikalnych krawędzi bez powtórek
@@ -291,31 +193,7 @@ def is_semi_eulerian(adjacency_list):
 
 #Sprawdza czy jest ścieżka w grafie spójnym, który ma 2 wierzchołki nieparzyste a reszte parzyste
 def is_semi_eulerian(adjacency_list):
-    print("Funkcja czy półeulerowski (czy zawiera ścieżkę)")
-
-    # Warunek 1: Sprawdź spójność grafu
-    components = find_components(adjacency_list)
-    num_components = len(components)
-    print("Liczba komponentów spójności:", num_components)
-
-    if num_components > 1:
-        print("Graf jest niespójny, więc nie jest pół-Eulerowski.")
-        return False
-
-    # Warunek 2: Sprawdź, czy dokładnie dwa wierzchołki mają stopień nieparzysty
-    odd_degree_vertices = 0
-    for vertex, neighbors in adjacency_list.items():
-        degree = len(neighbors)
-        print(f"stopien dla {vertex} to {degree}")
-        if degree % 2 != 0:
-            odd_degree_vertices += 1
-
-    print("Liczba wierzchołków o nieparzystym stopniu:", odd_degree_vertices)
-    if odd_degree_vertices != 2:
-        print("Graf nie spełnia warunku stopni wierzchołków (dokładnie dwa wierzchołki o nieparzystym stopniu).")
-        return False
-
-    # Warunek 3: Sprawdź unikalność krawędzi podczas DFS
+    # Sprawdzenie unikalności krawędzi podczas DFS
     for vertex in adjacency_list:
         visited_edges, euler_path = dfs_iter_with_edges_and_path(adjacency_list, vertex)
         all_edges = set(tuple(sorted((u, v))) for u in adjacency_list for v in adjacency_list[u])
@@ -327,33 +205,17 @@ def is_semi_eulerian(adjacency_list):
     return False, None
 
 
-# funkcja sprawdza czy graf jest eulerowski - czyli:
+# ------------------------------------------------------------------------------Eulerowski(cykl Eulera)
 # - czy jest spojny oraz 
 # -Wszystkie wierzchołki muszą mieć parzysty stopień
+
+# Sprawdza czy jest cykl Eulera w grafie spójnym, którego wszystkie wierzchołki mają stopień parzysty
 def is_eulerian(adjacency_list):
-
-    # Warunek 1: Graf musi być spójny
-    components = find_components(adjacency_list)
-    num_components = len(components)
-    print("Liczba komponentów spójności:", num_components)
-
-    if num_components > 1:
-        print("Graf jest niespójny, więc nie jest pół-Eulerowski.")
-        return False
-
-    # Warunek 2: Wszystkie wierzchołki muszą mieć parzysty stopień
-    for vertex, neighbors in adjacency_list.items():
-        if len(neighbors) % 2 != 0:
-            print(f"Wierzchołek {vertex} ma nieparzysty stopień.")
-            return False
-
-    return True
+    cycle = fleury_algorithm(adjacency_list)
+    return cycle
 
 #Lista wierzchołków w kolejności cyklu Eulera lub komunikat o braku cyklu
 def fleury_algorithm(adjacency_list):
-
-    if not is_eulerian(adjacency_list):
-        return "Graf nie spełnia warunków cyklu Eulera."
     
     # Skopiuj graf, aby nie modyfikować oryginalnego
     graph_copy = {u: neighbors[:] for u, neighbors in adjacency_list.items()}
@@ -387,14 +249,14 @@ def is_bridge(graph, u, v):
     :return: True, jeśli krawędź (u, v) jest mostem; False w przeciwnym razie.
     """
     # Liczba komponentów przed usunięciem krawędzi
-    initial_components = count_components(graph)
+    initial_components = len(find_components(graph))
     
     # Usuń krawędź (u, v)
     graph[u].remove(v)
     graph[v].remove(u)
     
     # Liczba komponentów po usunięciu krawędzi
-    new_components = count_components(graph)
+    new_components = len(find_components(graph))
     
     # Przywróć krawędź (u, v)
     graph[u].append(v)
@@ -434,33 +296,24 @@ if __name__ == "__main__":
         degree_sequence = calculate_degree_sequence(adjacency_list)
         print(F"Ciąg stopni wierzchołków: {degree_sequence}")
 
-        # Wszytskie parzyste?
-        result = all_vertices_even(degree_sequence)
-        # print(f"Czy wszystkie wierzchołki są parzyste? {result}\n")
 
-        result1 = has_exactly_two_odd_degrees(degree_sequence)
-        # print(f"Czy są dokładnie dwa wierzchołki o nieparzystym stopniu? {result1}")
-
-        if result:
+        if all_vertices_even(degree_sequence):
             print("Wszystkie wierzchołki parzyste, sprawdzam czy jest cykl Eulera.\n")
             # is_eulerian()
             pass
         else:
-            if result1:
+            if has_exactly_two_odd_degrees(degree_sequence):
                 print(f"Dwa  wierzchołki nieparzyste, reszta stopnia parzystego, sprawdzam czy jest ścieżka Eulera.\n")
                 #is_semi_eulerian(adjacency_list)
+                result, euler_path = is_semi_eulerian(adjacency_list)
+                print("Czy graf jest pół-Eulerowski?", result)
+
+                if euler_path:
+                     print("Ścieżka Eulera:", euler_path)
             else:
                 print("Graf Nieeulerowski")
-        # #---------------------------------------------------- sprawdzenie czy Pół-euelrowski -ścieżka eulera - każda krawedz 1 raz
-        # result, euler_path = is_semi_eulerian(adjacency_list)
-        # print("Czy graf jest pół-Eulerowski?", result)
 
-        # if euler_path:
-        #     print("Ścieżka Eulera:", euler_path)
 
-        #---------------------------------------------------- sprawdzenie czy Euelrowski -cykl eulera - każda krawedz 1 raz, każdy wierzchołek stopnia parzystego
-
-        
 
         #------------------------------------------------------Ogólne sprawdzenie
         # #sprawdzenie spojnosci grafu
@@ -484,3 +337,13 @@ if __name__ == "__main__":
         else:
             print("BRAK MOSTÓW")
 
+
+    
+# def count_edges(self):
+#     """Zlicza liczbę krawędzi w grafie."""
+#     edge_count = 0  
+
+#     for neighbors in self.adjacency_list:
+#         edge_count += len(neighbors) - 1  # Odejmujemy 1, aby pominąć numer wierzchołka
+    
+#     return edge_count // 2 
