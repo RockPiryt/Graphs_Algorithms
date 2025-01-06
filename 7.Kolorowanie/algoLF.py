@@ -40,23 +40,22 @@ def sort_vertices_by_degree(adjacency_list):
     # Zwróć tylko wierzchołki
     return [vertex for _, vertex in sorted_vertices]
 
-# Wykonaj iteracyjne przeszukiwanie wierzchołków wszerz (BFS). return: Lista odwiedzonych wierzchołków w kolejności odwiedzania oraz odwiedzone wierzchołki.
-def bfs_iter(adj_list, start):
 
-    visited = {node: False for node in adj_list}  
-    queue = [start] 
-    order = [] 
+# Iteracyjne przeszukanie grafu w głąb
+def dfs_iter(adj_list, start):
+    visited = {node: False for node in adj_list}
+    stack = [start]
+    order = []
 
-    visited[start] = True  
+    while stack:
+        node = stack.pop()
+        if not visited[node]:
+            visited[node] = True
+            order.append(node)
 
-    while queue:
-        node = queue.pop(0) 
-        order.append(node)  
-
-        for neighbor in sorted(adj_list[node]):  # Przeszukuj sąsiadów w kolejności rosnącej
-            if not visited[neighbor]:
-                visited[neighbor] = True  
-                queue.append(neighbor)  
+            for neighbor in adj_list[node]:
+                if not visited[neighbor]:
+                    stack.append(neighbor)
 
     return order, visited
 
@@ -66,14 +65,14 @@ def largest_first_coloring(adjacency_list, sorted_vertices):
     # Rozpocznij od pierwszego wierzchołka z posortowanej listy
     start_vertex = sorted_vertices[0]
 
-    # Wykonaj BFS od tego wierzchołka
-    bfs_order, _ = bfs_iter(adjacency_list, start_vertex)
+    # Wykonaj DFS od tego wierzchołka
+    dfs_order, _ = dfs_iter(adjacency_list, start_vertex)
 
     # Inicjalizuj kolorowanie wierzchołków
     coloring = {}
 
     # Pokolorowanie wierzchołków zgodnie z BFS order
-    for vertex in bfs_order:
+    for vertex in dfs_order:
         # Zebranie kolory sąsiadów 
         neighbor_colors = set()
         for neighbor in adjacency_list[vertex]:
@@ -87,40 +86,14 @@ def largest_first_coloring(adjacency_list, sorted_vertices):
 
         coloring[vertex] = color
     
-    # Posortuj wyniki kolorowania według wierzchołków rosnąco (metoda dla początkujących)
-    sorted_coloring = {}
-    for vertex in sorted(coloring.keys()):
-        sorted_coloring[vertex] = coloring[vertex]
-        
-    # Liczba chromatyczna to maksymalny użyty kolor
-    chromatic_number = max(coloring.values()) if coloring else 0
-
-    return coloring, chromatic_number
-
-def largest_first_coloring2(adjacency_list, sorted_vertices):
-     # Inicjalizuj kolorowanie wierzchołków
-    coloring = {}
-
-    # Pokoloruj wierzchołki
-    for vertex in sorted_vertices:
-        # Zbierz kolory sąsiadów (prostszym sposobem dla początkujących)
-        neighbor_colors = set()
-        for neighbor in adjacency_list[vertex]:
-            if neighbor in coloring:
-                neighbor_colors.add(coloring[neighbor])
-
-        # Znajdź najmniejszy dostępny kolor zaczynając od 1
-        color = 1
-        while color in neighbor_colors:
-            color += 1
-
-        coloring[vertex] = color
+    # # Posortuj wyniki kolorowania według wierzchołków rosnąco (metoda dla początkujących)
+    # sorted_coloring = {}
+    # for vertex in sorted(coloring.keys()):
+    #     sorted_coloring[vertex] = coloring[vertex]
     
-    # Posortuj wyniki kolorowania według wierzchołków rosnąco (metoda dla początkujących)
-    sorted_coloring = {}
-    for vertex in sorted(coloring.keys()):
-        sorted_coloring[vertex] = coloring[vertex]
-
+    # # Posortuj wyniki kolorowania według wierzchołków rosnąco
+    # sorted_coloring = dict(sorted(coloring.items()))
+        
     # Liczba chromatyczna to maksymalny użyty kolor
     chromatic_number = max(coloring.values()) if coloring else 0
 
@@ -137,5 +110,6 @@ if __name__ == "__main__":
     
     
     coloring, chromatic_number = largest_first_coloring(adjacency_list, sorted_vertices)
-    print("Kolorowanie wierzchołków:", coloring)
-    print("Liczba chromatyczna:", chromatic_number)
+    # print("Kolorowanie wierzchołków jako słownik:", coloring)
+    print("Kolorowanie wierzchołków:", " ".join(map(str, coloring.values())))
+    print(f"Liczba chromatyczna == {chromatic_number}")
