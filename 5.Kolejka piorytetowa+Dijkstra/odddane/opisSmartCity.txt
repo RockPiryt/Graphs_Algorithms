@@ -1,0 +1,229 @@
+Dynamicznie rozwijające się miasto "SmartCity" stoi przed wyzwaniem modernizacji swojej infrastruktury komunikacyjnej. W związku z organizacją międzynarodowych wydarzeń sportowych w kolejnym roku, władze miasta muszą zoptymalizować system transportu publicznego.
+
+Aktualna sieć komunikacyjna łączy różne dzielnice miasta, centra biznesowe, kompleksy sportowe i węzły przesiadkowe. Każde połączenie charakteryzuje się określonym czasem przejazdu, który może się różnić ze względu na rodzaj drogi, natężenie ruchu i infrastrukturę.
+
+Władze miasta potrzebują zaawansowanego systemu analitycznego, który pomoże:
+
+Zoptymalizować podstawową sieć połączeń
+Zidentyfikować kluczowe węzły komunikacyjne
+Znaleźć obszary wymagające dodatkowych połączeń
+Zaplanować alternatywne trasy na wypadek przeciążenia głównych arterii
+Określić najbardziej oddalone od centrum części miasta
+Potrzebne definicje
+Punkt krytyczny (punkt artykulacji):
+Jest to węzeł komunikacyjny, którego usunięcie zwiększa liczbę rozspójnionych części sieci
+Awaria w takim punkcie może podzielić miasto na izolowane obszary
+Przykład: Jeśli dwie części miasta łączy tylko jedna stacja przesiadkowa, jest ona punktem krytycznym
+Centrum grafu:
+Zbiór węzłów o minimalnej ekscentryczności (równej promieniowi grafu)
+Reprezentuje dzielnice, z których najłatwiej dotrzeć do najdalszego punktu miasta
+Peryferium grafu:
+Zbiór węzłów o maksymalnej ekscentryczności (równej średnicy grafu)
+Wskazuje najbardziej oddalone dzielnice miasta
+Format wejścia
+Pierwsza linia zawiera dwie liczby całkowite:
+n (2 ≤ n ≤ 100) - liczba dzielnic/węzłów komunikacyjnych
+m (n-1 ≤ m ≤ n(n-1)/2) - liczba bezpośrednich połączeń
+Kolejne m linii zawiera po trzy liczby całkowite:
+a, b (1 ≤ a,b ≤ n) - numery połączonych dzielnic
+w (1 ≤ w ≤ 1000) - czas przejazdu w minutach
+Format wyjścia
+"SIEĆ PODSTAWOWA (MST):"
+Lista krawędzi w minimalnym drzewie spinającym
+Format: "a-b: w" (posortowane rosnąco po wagach)
+"Łączny czas: suma_wag"
+"PARAMETRY SIECI:"
+"Średnica: x" (najdłuższa z najkrótszych ścieżek)
+"Promień: y" (minimalna ekscentryczność)
+"Centrum: [lista_wierzchołków]" (wierzchołki o ekscentryczności równej promieniowi)
+"Peryferium: [lista_wierzchołków]" (wierzchołki o ekscentryczności równej średnicy)
+"CZASY PRZEJAZDÓW:"
+Macierz najkrótszych czasów przejazdów między wszystkimi parami dzielnic
+Format: n wierszy po n liczb
+"INF" dla braku połączenia
+"PUNKTY KRYTYCZNE:"
+Lista punktów artykulacji (sortowane rosnąco)
+"BRAK" jeśli nie istnieją
+Przykład
+5 5
+1 2 1
+2 3 2
+3 4 3
+3 5 4
+4 5 5
+
+SIEĆ PODSTAWOWA (MST):
+1-2: 1
+2-3: 2
+3-4: 3
+3-5: 4
+Łączny czas: 10
+
+PARAMETRY SIECI:
+Średnica: 7
+Promień: 4
+Centrum: [3]
+Peryferium: [1, 5]
+
+CZASY PRZEJAZDÓW:
+0 1 3 6 7
+1 0 2 5 6
+3 2 0 3 4
+6 5 3 0 5
+7 6 4 5 0
+
+PUNKTY KRYTYCZNE:
+2 3
+
+
+Punktacja
+Kategoria	Podkategoria	Punkty
+Implementacja algorytmów	Dijkstra z kolejką priorytetową	1.0
+ 	MST (Prim/Kruskal)	1.0
+ 	DFS i punkty artykulacji	1.0
+Parametry grafu	Średnica i promień	0.5
+ 	Centrum i peryferium	0.5
+ 	Macierz czasów przejazdu	0.5
+Implementacja	Poprawność przypadków brzegowych	0.5
+ 	Efektywność czasowa	0.5
+ 	Jakość kodu	0.5
+Uwagi
+Graf jest nieskierowany i ważony
+Wagi są dodatnie i całkowite
+Przy równych wagach w MST decyduje mniejszy numer wierzchołka
+W przypadku błędnych danych: "BŁĄD"
+Graf może nie być spójny - wtedy "BŁĄD"
+Czas wykonania: 1 sekunda
+Złożoność obliczeniowa
+Dijkstra: O(m log n) z kolejką priorytetową
+MST: O(m log n)
+DFS dla punktów artykulacji: O(n + m)
+Parametry grafu (średnica/promień): O(n^3)
+Całkowita: O(n^3)
+Sample Input 1:
+
+6 8
+1 2 4
+2 3 3
+3 4 5
+4 5 2
+5 6 5
+6 1 4
+2 4 6
+3 5 4
+Sample Output 1:
+
+SIEĆ PODSTAWOWA (MST):
+4-5: 2
+2-3: 3
+1-2: 4
+1-6: 4
+3-5: 4
+Łączny czas: 17
+
+PARAMETRY SIECI:
+Średnica: 10
+Promień: 8
+Centrum: [2]
+Peryferium: [1, 4]
+
+CZASY PRZEJAZDÓW:
+0 4 7 10 9 4
+4 0 3 6 7 8
+7 3 0 5 4 9
+10 6 5 0 2 7
+9 7 4 2 0 5
+4 8 9 7 5 0
+
+PUNKTY KRYTYCZNE:
+BRAK
+Sample Input 2:
+
+2 1
+1 2 5
+Sample Output 2:
+
+SIEĆ PODSTAWOWA (MST):
+1-2: 5
+Łączny czas: 5
+
+PARAMETRY SIECI:
+Średnica: 5
+Promień: 5
+Centrum: [1, 2]
+Peryferium: [1, 2]
+
+CZASY PRZEJAZDÓW:
+0 5
+5 0
+
+PUNKTY KRYTYCZNE:
+BRAK
+Sample Input 3:
+
+5 5
+1 2 1
+2 3 2
+3 4 3
+3 5 4
+4 5 5
+Sample Output 3:
+
+SIEĆ PODSTAWOWA (MST):
+1-2: 1
+2-3: 2
+3-4: 3
+3-5: 4
+Łączny czas: 10
+
+PARAMETRY SIECI:
+Średnica: 7
+Promień: 4
+Centrum: [3]
+Peryferium: [1, 5]
+
+CZASY PRZEJAZDÓW:
+0 1 3 6 7
+1 0 2 5 6
+3 2 0 3 4
+6 5 3 0 5
+7 6 4 5 0
+
+PUNKTY KRYTYCZNE:
+2 3
+Sample Input 4:
+
+6 7
+1 2 5
+2 3 5
+3 4 5
+4 5 5
+5 6 5
+1 6 5
+2 5 5
+Sample Output 4:
+
+SIEĆ PODSTAWOWA (MST):
+1-2: 5
+1-6: 5
+2-3: 5
+2-5: 5
+3-4: 5
+Łączny czas: 25
+
+PARAMETRY SIECI:
+Średnica: 15
+Promień: 10
+Centrum: [2, 5]
+Peryferium: [1, 3, 4, 6]
+
+CZASY PRZEJAZDÓW:
+0 5 10 15 10 5
+5 0 5 10 5 10
+10 5 0 5 10 15
+15 10 5 0 5 10
+10 5 10 5 0 5
+5 10 15 10 5 0
+
+PUNKTY KRYTYCZNE:
+BRAK

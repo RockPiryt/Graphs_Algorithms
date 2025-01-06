@@ -1,0 +1,131 @@
+W samym sercu tętniącego życiem miasta znajduje się nowoczesny wieżowiec "Tech Tower" - siedziba główna międzynarodowej korporacji IT. Po serii niedawnych incydentów związanych z bezpieczeństwem, zarząd firmy zdecydował o modernizacji systemu ewakuacyjnego.
+
+Budynek posiada skomplikowany układ pomieszczeń połączonych korytarzami, klatkami schodowymi i przejściami technicznymi. W każdym pomieszczeniu zainstalowano czujniki dymu i temperatury, które w czasie rzeczywistym monitorują potencjalne zagrożenia.
+
+Jako główny inżynier bezpieczeństwa, Twoim zadaniem jest zaprojektowanie algorytmu, który w przypadku wykrycia zagrożenia wyznaczy trasy ewakuacyjne z zagrożonych pomieszczeń do najbliższych wyjść ewakuacyjnych. Ze względu na specyfikę budynku i potrzebę szybkiej reakcji, algorytm musi bazować na przeszukiwaniu w głąb (DFS), które gwarantuje znalezienie drogi do wyjścia, jeśli taka istnieje.
+
+Wymagania Algorytmiczne
+Przeszukiwanie DFS - zasady jednoznaczności:
+DFS musi zawsze wybierać nieodwiedzonego sąsiada o NAJMNIEJSZYM numerze
+Zagrożone pomieszczenia przetwarzamy w kolejności rosnących numerów
+Pierwsza znaleziona ścieżka do wyjścia jest akceptowana jako trasa ewakuacyjna
+Wszystkie listy (wyjść, zagrożeń, sąsiadów) muszą być posortowane rosnąco
+Wymagania implementacyjne:
+Sortowanie przy użyciu własnej implementacji QuickSort:
+Pivot wybierany jako element środkowy
+Implementacja musi być stabilna
+Złożoność czasowa O(n log n)
+Restrykcje:
+Zakaz używania wbudowanych funkcji sortujących
+Zakaz używania gotowych struktur danych innych niż podstawowe listy
+Zakaz implementacji innych algorytmów przeszukiwania (np. BFS)
+Format Wejścia
+Pierwsza linia zawiera trzy liczby naturalne:
+
+n k m
+gdzie:
+n (2 ≤ n ≤ 30) - liczba pomieszczeń
+k (1 ≤ k ≤ 5) - liczba wyjść ewakuacyjnych
+m (1 ≤ m ≤ 3) - liczba pomieszczeń z wykrytym zagrożeniem
+Następne n linii zawiera macierz sąsiedztwa A[n][n]:
+A[i][j] = 1 oznacza bezpośrednie połączenie
+A[i][j] = 0 oznacza brak połączenia
+Kolejna linia: k numerów wyjść ewakuacyjnych (rosnąco)
+Ostatnia linia: m numerów zagrożonych pomieszczeń (rosnąco)
+Format Wyjścia
+Pierwsza linia:
+"BEZPIECZNY" - jeśli istnieją drogi ewakuacyjne ze wszystkich zagrożonych pomieszczeń
+"NIEBEZPIECZNY" - jeśli choć jedno pomieszczenie nie ma drogi ewakuacyjnej
+Kolejne m linii:
+Dla każdego zagrożonego pomieszczenia (w kolejności rosnącej):
+Ścieżka ewakuacyjna jako ciąg numerów pomieszczeń
+lub "BRAK DROGI Z POMIESZCZENIA X"
+Jeśli status "BEZPIECZNY":
+Ostatnia linia: pełna kolejność ewakuacji (przejście DFS)
+Przykład Szczegółowy
+
+Input:
+6 2 2
+0 1 0 0 0 1
+1 0 1 0 0 0
+0 1 0 1 0 0
+0 0 1 0 1 0
+0 0 0 1 0 1
+1 0 0 0 1 0
+1 4
+2 3
+
+Output:
+BEZPIECZNY
+2 1
+3 2 1
+2 1 6 5 4 3
+Analiza przykładu
+Mamy budynek z 6 pomieszczeniami gdzie:
+Pomieszczenia 1 i 4 to wyjścia ewakuacyjne
+Pomieszczenia 2 i 3 zgłosiły zagrożenie
+Algorytm przetwarza zagrożone pomieszczenia w kolejności (2, 3):
+Dla pomieszczenia 2:
+DFS startuje z 2
+Sąsiedzi to [1, 3] - wybieramy 1 (mniejszy numer)
+1 jest wyjściem - kończymy z trasą [2, 1]
+Dla pomieszczenia 3:
+DFS startuje z 3
+Sąsiedzi to [2, 4] - wybieramy 2
+Z 2 idziemy do 1 (wyjście)
+Kończymy z trasą [3, 2, 1]
+Pełna kolejność ewakuacji:
+DFS startuje z pomieszczenia 2 (pierwsze zagrożone)
+Przechodzi przez wszystkie dostępne pomieszczenia
+Wynikiem jest kolejność 2 1 6 5 4 3
+Status "BEZPIECZNY" ponieważ:
+Znaleziono ścieżki do wyjść z obu zagrożonych pomieszczeń
+Wszystkie pomieszczenia są dostępne w przejściu DFS
+Kryteria oceny:
+Implementacja DFS zgodnie z zasadami - 1pkt
+Własna implementacja QuickSort - 1pkt
+Poprawność ścieżek ewakuacyjnych - 1pkt
+Generowanie pełnej kolejności - 1pkt
+Obsługa błędów i walidacja - 1pkt
+Sample Input 1:
+
+6 2 2
+0 1 0 0 0 1
+1 0 1 0 0 0
+0 1 0 1 0 0
+0 0 1 0 1 0
+0 0 0 1 0 1
+1 0 0 0 1 0
+1 4
+2 3
+Sample Output 1:
+
+BEZPIECZNY
+2 1
+3 2 1
+2 1 6 5 4 3
+Sample Input 2:
+
+4 1 2
+0 1 0 0
+1 0 0 0
+0 0 0 1
+0 0 1 0
+1
+2 3
+Sample Output 2:
+
+NIEBEZPIECZNY
+2 1
+BRAK DROGI Z POMIESZCZENIA 3
+Sample Input 3:
+
+3 2 2
+0 1 0
+1 0 2
+0 2 0
+1 2
+2 3
+Sample Output 3:
+
+BŁĄD
