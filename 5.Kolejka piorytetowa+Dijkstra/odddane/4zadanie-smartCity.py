@@ -391,7 +391,7 @@ def find_articulation_points(graph, num_components_original_graph):
         # Zliczenie komponentów po usunięciu wierzchołka
         current_components = find_components(graph)
         num_current_components = len(current_components)
-        print(f"ilość komponentów po usunięciu {vertex} wynosi {num_current_components}, a są to komponeny {current_components}")
+        # print(f"ilość komponentów po usunięciu {vertex} wynosi {num_current_components}, a są to komponeny {current_components}")
 
         # Jeśli liczba komponentów wzrosła, wierzchołek jest punktem artykulacyjnym
         if num_current_components > num_components_original_graph:
@@ -578,8 +578,8 @@ def shortest_paths_matrix(graph):
 if __name__ == "__main__":
     
     n, m, edges = get_data()
-    print(f"liczba dzielnic/węzłów komunikacyjnychi (ilość vertex){n}")
-    print(f"liczba bezpośrednich połączeń (ilość krawędzi) {m}")
+    # print(f"liczba dzielnic/węzłów komunikacyjnychi (ilość vertex){n}")
+    # print(f"liczba bezpośrednich połączeń (ilość krawędzi) {m}")
     # print(f"Krawędzie z wagami {edges}")
 
     #-----------------------------------------------------------------------------wyznaczanie MST
@@ -589,44 +589,41 @@ if __name__ == "__main__":
     minSpinalTree, total_weight = kruskal(edges, n)
 
     # Wyświetlenie minimalnego drzewa spinającego
-    print('MINIMALNE DRZEWO SPINAJĄCE:')
+    print("\n\nSIEĆ PODSTAWOWA (MST):")
     total_cost = 0
     for edge in minSpinalTree:
-        print(f"{edge['a']} {edge['b']} {edge['w']}")
+        print(f"{edge['a']}-{edge['b']}: {edge['w']}")
         total_cost += edge['w']
-    print(f'Łączny koszt: {total_cost}')
+    print(f"Łączny czas: {total_cost}")
 
     #-----------------------------------------------------tworznenie listy sąsiedztwa z wagami (dijsktra)
     adjacency_list_weights = create_adjacency_list_with_weights(n, edges)
     print("Lista sąsiedztwa z wagami:")
     print(adjacency_list_weights)
-    print("\n\n")
     # --------------------------------------------------------wyznaczanie: średnicy, promienia, peryferium i centrum
-    print("GŁÓWNE PARAMETRY")
+    print("\n\nPARAMETRY SIECI:")
     diameter = graph_diameter_with_dijkstra(adjacency_list_weights)
-    print("Średnica grafu:", diameter)
+    print("Średnica:", diameter)
     
     radius = graph_radius(adjacency_list_weights)
-    print("Promień grafu:", radius)
-
-    periphery = find_periphery(adjacency_list_weights, diameter)
-    print("Peryferium grafu:")
-    print(" ".join(map(str, periphery)))
+    print("Promień:", radius)
 
     center = graph_center(adjacency_list_weights)
-    print("Centrum grafu:", center)
-    print("\n\n")
+    print("Centrum:", center)
+
+    periphery = find_periphery(adjacency_list_weights, diameter)
+    print("Peryferium:", periphery)
+
 
      #-----------------------------------------------------tworznenie listy sąsiedztwa bez wag (articulation points)
-    print("PUNKTY ARYTUKALCJI")
     adj_list = create_adj_list(edges)
-    print("lista sasiedztwa")
-    print(adj_list)
+    # print("lista sasiedztwa")
+    # print(adj_list)
 
     # Znajdowanie komponentów w oryginalnym grafie
     komponenty = find_components(adj_list)
     num_components_original_graph = len(komponenty)
-    print("liczba kompoentów w oryinalnym grafie :", num_components_original_graph)
+    # print("liczba kompoentów w oryinalnym grafie :", num_components_original_graph)
 
     # tylko grafy spójne, wiec ilość komponentów=1
     if num_components_original_graph > 1:
@@ -634,19 +631,15 @@ if __name__ == "__main__":
 
     #znajdowanie pkt artykulacji
     articulation_points = find_articulation_points(adj_list, num_components_original_graph)
-    print("Punkty artykulacyjne:", articulation_points)
-    print("\n\n")
-
+    print("\n\nPUNKTY KRYTYCZNE:")
+    if articulation_points:
+        print(" ".join(map(str, articulation_points)))
+    else:
+        print("BŁĄD")
     #-----------------------------------------------------tworznie macierzy najkrtoszych czasów (korzystam z dijkstra z wagami)
     result_matrix = shortest_paths_matrix(adjacency_list_weights)
 
-    print("Macierz najkrótszych czasów dojazdów:")
+    print("\n\nCZASY PRZEJAZDÓW:")
     for row in result_matrix:
-        print(row)
-
-        
-
-
-
-
+        print(" ".join(map(str, row)))
 
