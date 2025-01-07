@@ -109,15 +109,30 @@ def largest_first_coloring(adjacency_list, sorted_vertices):
 
     # Pokolorowanie wierzchołków zaczynjąc od  wierzchołka o najwyższym stopniu i najwyższym labelu na podstawie listy sorted_vertices.
     for vertex in sorted_vertices:
-        neighbor_colors = set()
-
-        # podczas przeszukiwania sąsiadów zaczynamy zawsze od sąsiada z najmniejszym labelem.
-        start_vertex = min(adjacency_list.keys())
-        neighbors_dfs_order, _ = dfs_iter(adjacency_list, start_vertex)
-        for neighbor in neighbors_dfs_order:
-            if neighbor in adjacency_list[vertex] and neighbor in coloring:
-                neighbor_colors.add(coloring[neighbor])
         
+        if adjacency_list[vertex] != []:
+            neighbor_colors = set()
+
+            # podczas przeszukiwania sąsiadów zaczynamy zawsze od sąsiada z najmniejszym labelem.
+            start_vertex = min(adjacency_list.keys())
+            neighbors_dfs_order, _ = dfs_iter(adjacency_list, start_vertex)
+            # print("neighbors_dfs_order", neighbors_dfs_order)
+            for neighbor in neighbors_dfs_order:
+                if neighbor in adjacency_list[vertex] and neighbor in coloring:
+                    neighbor_colors.add(coloring[neighbor])
+            # print(f"Wierzchołek: {vertex}")
+            # print(f"Sąsiedzi: {adjacency_list.get(vertex, [])}")
+            # print(f"Kolory sąsiadów: {neighbor_colors}")
+        else:
+            # Jeśli wierzchołek ma pustą listę sąsiedztwa, sprawdź kolor wierzchołka, który jest połączony z tym wierzchołkiem
+            connected_vertex = next((v for v, neighbors in adjacency_list.items() if vertex in neighbors), None)
+            if connected_vertex is not None:
+                neighbor_colors = {coloring[connected_vertex]} if connected_vertex in coloring else set()
+                # print(f"Wierzchołek: {vertex}")
+                # print(f"Połączony z wierzchołkiem: {connected_vertex}")
+                # print(f"Kolory sąsiada: {neighbor_colors}")
+            else:
+                neighbor_colors = set()
 
         # Znajdź najmniejszy dostępny kolor zaczynając od 1
         color = 1
@@ -144,7 +159,7 @@ if __name__ == "__main__":
 
      # Normalizuj listę sąsiedztwa
     adjacency_list = normalize_adjacency_list(adjacency_list)
-    print("Lista sąsiedztwa po dodaniu pustej listy jak brak sąsiadów:", adjacency_list)
+    # print("Lista sąsiedztwa po dodaniu pustej listy jak brak sąsiadów:", adjacency_list)
 
     # sorted_vertices = sort_vertices_by_degree(adjacency_list)
     # print("Wierzchołki posortowane według stopnia:", sorted_vertices)
