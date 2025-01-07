@@ -554,25 +554,28 @@ def format_components_after_removal(components):
     return formatted_components
 
 #Oblicza macierz najkrótszych czasów dojazdów w grafie, korzystając z algorytmu Dijkstry.
-def shortest_paths_matrix(graph):
+def shortest_paths_matrix(adjacency_list_weights):
 
-    vertices = list(graph.keys())  # Wierzchołki grafu
+    vertices = sorted(adjacency_list_weights.keys())
+    print("\nWierzchołki (posortowane rosnąco):", vertices)
     num_vertices = len(vertices)
-    
+
     # Macierz wynikowa, wypełniona początkowo nieskończonościami
-    shortest_paths = [[float("inf")] * num_vertices for _ in range(num_vertices)]
-    
+    shortest_paths = [["INF"] * num_vertices for _ in range(num_vertices)]
+
     # Uruchom Dijkstrę dla każdego wierzchołka jako punktu startowego
     for i in range(num_vertices):
         start_vertex = vertices[i]
-        distances = dijkstra(graph, start_vertex)
-        
+        distances = dijkstra(adjacency_list_weights, start_vertex)
+
         # Wypełnij wiersz `i` w macierzy wynikowej
         for j in range(num_vertices):
             end_vertex = vertices[j]
-            shortest_paths[i][j] = distances[end_vertex]
-    
+            if distances[end_vertex] < float("inf"):
+                shortest_paths[i][j] = distances[end_vertex]
+
     return shortest_paths
+
 
 
 if __name__ == "__main__":
@@ -642,4 +645,4 @@ if __name__ == "__main__":
     print("\n\nCZASY PRZEJAZDÓW:")
     for row in result_matrix:
         print(" ".join(map(str, row)))
-
+    
