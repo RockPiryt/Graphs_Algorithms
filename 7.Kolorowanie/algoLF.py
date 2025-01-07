@@ -86,13 +86,13 @@ def largest_first_coloring(adjacency_list, sorted_vertices):
 
     # Pokolorowanie wierzchołków zaczynjąc od  wierzchołka o najwyższym stopniu i najwyższym labelu na podstawie listy sorted_vertices.
     for vertex in sorted_vertices:
-        print(f"Przetwarzanie wierzchołka: {vertex}")
+        # print(f"Przetwarzanie wierzchołka: {vertex}")
         # Zebranie kolory sąsiadów 
         neighbor_colors = set()
 
         # podczas przeszukiwania sąsiadów zaczynamy zawsze od sąsiada z najmniejszym labelem.
         start_vertex = min(adjacency_list.keys())
-        print(f"Startowy wierzchołek dla DFS: {start_vertex}")
+        # print(f"Startowy wierzchołek dla DFS: {start_vertex}")
         neighbors_dfs_order, _ = dfs_iter(adjacency_list, start_vertex)
         for neighbor in neighbors_dfs_order:
             if neighbor in adjacency_list[vertex] and neighbor in coloring:
@@ -106,7 +106,7 @@ def largest_first_coloring(adjacency_list, sorted_vertices):
             color += 1
 
         coloring[vertex] = color
-        # print(f"Przypisany kolor dla wierzchołka {vertex}: {color}")
+        print(f"Przypisany kolor dla wierzchołka {vertex}: {color}")
     
     # Posortuj wyniki kolorowania według wierzchołków rosnąco (metoda dla początkujących)
     sorted_coloring = {}

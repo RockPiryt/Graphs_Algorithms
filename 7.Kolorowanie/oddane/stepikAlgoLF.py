@@ -20,6 +20,21 @@ def read_adjacency_list():
 
     return adjacency_list
 
+# Dodanie pustej listy jak brak sąsiadów
+def normalize_adjacency_list(adjacency_list):
+    # Zbierz wszystkie wierzchołki występujące w grafie
+    all_vertices = set(adjacency_list.keys())
+    for neighbors in adjacency_list.values():
+        all_vertices.update(neighbors)
+
+    # Dodaj brakujące wierzchołki z pustą listą sąsiadów
+    for vertex in all_vertices:
+        if vertex not in adjacency_list:
+            adjacency_list[vertex] = []
+
+    return adjacency_list
+
+
 # Funkcja uporządkowuje wierzchołki grafu nierosnąco według stopni.
 def sort_vertices_by_degreeHeap(adjacency_list):
     # Utwórz kopiec jako listę krotek (stopień, wierzchołek)
@@ -64,7 +79,6 @@ def sort_vertices_by_degree(adjacency_list):
 
 # Iteracyjne przeszukiwanie grafu w głąb (DFS)
 def dfs_iter(adj_list, start):
-
     visited = {node: False for node in adj_list}  
     stack = [start] 
     order = [] 
@@ -73,14 +87,21 @@ def dfs_iter(adj_list, start):
         node = stack.pop()  
         if not visited[node]:
             visited[node] = True  
-            order.append(node) 
+            order.append(node)
+
+            # Sprawdź, czy wierzchołek ma sąsiadów
+            if node in adj_list:
+                neighbors = adj_list[node]
+            else:
+                neighbors = []
 
             # Dodaj sąsiadów na stos w kolejności odwrotnej, aby odwiedzać je w porządku rosnącym
-            for neighbor in sorted(adj_list[node], reverse=True):
+            for neighbor in sorted(neighbors, reverse=True):
                 if not visited[neighbor]:
                     stack.append(neighbor)
 
     return order, visited
+
 
 # Zliczanie kolorów potrzebnych do pokolorowania wierzchołków. return: Słownik z kolorowaniem wierzchołków i liczba chromatyczna.
 def largest_first_coloring(adjacency_list, sorted_vertices):
@@ -120,6 +141,10 @@ def largest_first_coloring(adjacency_list, sorted_vertices):
 if __name__ == "__main__":
     adjacency_list = read_adjacency_list()
     # print("Lista sąsiedztwa grafu:", adjacency_list)
+
+     # Normalizuj listę sąsiedztwa
+    adjacency_list = normalize_adjacency_list(adjacency_list)
+    print("Lista sąsiedztwa po dodaniu pustej listy jak brak sąsiadów:", adjacency_list)
 
     # sorted_vertices = sort_vertices_by_degree(adjacency_list)
     # print("Wierzchołki posortowane według stopnia:", sorted_vertices)
